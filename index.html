@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#E0614A">
-<title>きもちのあと（仮）</title>
+<meta name="theme-color" content="#B0503C">
+<title>GiftHub｜贈る前に、相手の本音を。</title>
 <style>
 /* ==================================================================
    v0.7  ── アンケート n=29 の結果を反映した版
@@ -19,13 +19,13 @@
      5. ○年前の今日（写真を使わずに思い出を残す）
    ================================================================== */
 :root{
-  --bg:#FFFCF9; --surface:#fff; --ink:#1F1A17; --ink2:#4A4138; --muted:#8E8075;
-  --accent:#E0614A; --accent2:#C9568B; --soft:#FDEEE9; --ok:#3E7A58; --okbg:#E6F0EA;
-  --no:#9B8E84; --line:#F2E9E2; --r:20px;
-  --grad:linear-gradient(135deg,#E0614A 0%,#C9568B 100%);
-  --grad-soft:linear-gradient(135deg,#FDEEE9 0%,#FBF0F6 100%);
+  --bg:#FCFAF7; --surface:#fff; --ink:#241E1A; --ink2:#4A4138; --muted:#8A7E72;
+  --accent:#B0503C; --accent2:#8E6B55; --soft:#F6EDE7; --ok:#3E6B52; --okbg:#E9F0EB;
+  --no:#9B8E84; --line:#EDE5DC; --r:20px;
+  --grad:linear-gradient(135deg,#B0503C 0%,#8E6B55 100%);
+  --grad-soft:linear-gradient(135deg,#F7F1EB 0%,#F2EBE3 100%);
   --sh:0 1px 2px rgba(31,26,23,.04),0 12px 32px rgba(31,26,23,.055);
-  --sh-lift:0 2px 6px rgba(31,26,23,.06),0 20px 48px rgba(224,97,74,.12);
+  --sh-lift:0 2px 6px rgba(31,26,23,.06),0 20px 48px rgba(176,80,60,.12);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--ink);line-height:1.72;font-size:16px;
@@ -47,13 +47,13 @@ h2{font-size:17.5px;font-weight:800;letter-spacing:-.01em}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
   padding:18px;box-shadow:var(--sh)}
-.card.hl{border-color:rgba(224,97,74,.35);box-shadow:var(--sh-lift)}
+.card.hl{border-color:rgba(176,80,60,.35);box-shadow:var(--sh-lift)}
 .card.ok{border-color:rgba(62,122,88,.3);background:#FBFEFC}
 
 .btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:17px;
   border:0;border-radius:16px;background:var(--grad);color:#fff;font-size:16px;font-weight:800;
   font-family:inherit;cursor:pointer;letter-spacing:.01em;
-  box-shadow:0 6px 18px rgba(224,97,74,.26);transition:transform .14s,box-shadow .2s,opacity .18s}
+  box-shadow:0 6px 18px rgba(176,80,60,.26);transition:transform .14s,box-shadow .2s,opacity .18s}
 .btn:active{transform:translateY(1px) scale(.99)}
 .btn[disabled]{opacity:.3;box-shadow:none;cursor:default}
 .btn.g{background:transparent;color:var(--muted);font-weight:700;padding:13px;box-shadow:none}
@@ -71,14 +71,14 @@ input:focus,textarea:focus{outline:0;border-color:var(--accent)}
 .loop{display:grid;place-items:center;margin:6px auto 0}
 .loop svg{display:block;overflow:visible}
 .loop .trk{fill:none;stroke:var(--line);stroke-width:2}
-.loop .arc{fill:none;stroke:#E0614A;stroke-width:3;stroke-linecap:round;
+.loop .arc{fill:none;stroke:#B0503C;stroke-width:3;stroke-linecap:round;
   stroke-dasharray:478;stroke-dashoffset:478;animation:dash 2.6s cubic-bezier(.3,.7,.3,1) .3s forwards}
 @keyframes dash{to{stroke-dashoffset:0}}
 .loop .nd{fill:#fff;stroke:var(--line);stroke-width:2.5}
-.loop .nd.on{fill:#E0614A;stroke:#E0614A}
-.loop .tx{font-size:11.5px;font-weight:800;fill:#8E8075;font-family:-apple-system,"Hiragino Sans",sans-serif}
-.loop .tx.on{fill:#E0614A}
-.loop .ctr{font-size:10px;font-weight:800;fill:#8E8075;letter-spacing:.12em}
+.loop .nd.on{fill:#B0503C;stroke:#B0503C}
+.loop .tx{font-size:11.5px;font-weight:800;fill:#8A7E72;font-family:-apple-system,"Hiragino Sans",sans-serif}
+.loop .tx.on{fill:#B0503C}
+.loop .ctr{font-size:10px;font-weight:800;fill:#8A7E72;letter-spacing:.12em}
 
 /* ★好みを聞く（◯×カード） */
 .pf{display:flex;gap:12px;align-items:center;padding:14px;border:1.5px solid var(--line);
@@ -116,7 +116,7 @@ input:focus,textarea:focus{outline:0;border-color:var(--accent)}
 .tag.x{background:#F3EFEB;color:var(--no);text-decoration:line-through}
 
 /* ○年前の今日 */
-.ago{background:var(--grad-soft);border:1px solid rgba(224,97,74,.18);border-radius:var(--r);
+.ago{background:var(--grad-soft);border:1px solid rgba(176,80,60,.18);border-radius:var(--r);
   padding:17px;margin-top:16px}
 .ago .y{font-size:11.5px;font-weight:800;color:var(--accent);letter-spacing:.08em}
 
@@ -156,7 +156,7 @@ input:focus,textarea:focus{outline:0;border-color:var(--accent)}
 .vbtn small{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:3px}
 
 .hero{background:var(--grad);border-radius:26px;padding:30px 22px;color:#fff;text-align:center;
-  box-shadow:0 18px 44px rgba(224,97,74,.3);position:relative;overflow:hidden}
+  box-shadow:0 18px 44px rgba(176,80,60,.3);position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;inset:0;
   background:radial-gradient(circle at 70% 10%,rgba(255,255,255,.22),transparent 60%)}
 .hero>*{position:relative}
@@ -191,107 +191,208 @@ input:focus,textarea:focus{outline:0;border-color:var(--accent)}
 .sum span{font-size:10.5px;color:var(--muted);font-weight:700}
 .prog{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:16px}
 .prog i{display:block;height:100%;background:var(--grad);transition:width .3s}
+
+/* 線画アイコン（絵文字のかわり） */
+.ic-s{display:inline-block;vertical-align:-.18em;flex:0 0 auto}
+.item .ic,.pf .ic{color:var(--accent);background:#F7F2EC;border:1px solid var(--line)}
+.pc .im{color:var(--accent)}
+.tl2{color:var(--ink)}
+.tl2 .ic-s{color:var(--accent);margin-bottom:2px}
+.chip .ic-s{color:inherit;margin-right:3px}
+.chip.on .ic-s{color:#fff}
+.dw .mi .e{color:var(--accent);display:grid;place-items:center}
+.hd .rt{color:var(--ink);display:grid;place-items:center}
+.tc .ic{line-height:0}
+.st .ck .ic-s{color:#fff}
+.vd .ic-s{margin-right:2px}
+/* 商品タイルを写真なしでも成立させる */
+.pc .im{background:linear-gradient(160deg,#F8F3EC 0%,#F1E9DF 100%)}
+.item .ic{border-radius:12px}
 </style>
 </head>
 <body><div id="app"></div>
 <script>
 /* ==================================================================
-   GiftHub（仮） v0.9
-   ■ v0.9 で足したもの
-     購入 → URL発行 → 受け取り → 気持ち評価 を、ひと続きにしました。
-     ・ラッピング／のし／メッセージカードを選ぶ
-     ・金額の内訳と支払い方法（疑似）
-     ・注文確定・注文番号の発行
-     ・受け取る人が「受け取り方」を選ぶ（住所は贈り主に見えません）
-     ・商品を 18点 → 42点、予算でしぼれるように
+   GiftHub（仮） v1.2
+   ■ v1.2 で変えたこと
+     1. 絵文字をやめ、線画アイコン（SVG）に統一
+        → 絵文字は端末ごとに見た目が変わり、作り込みが浅く見えるため
+     2. カテゴリ・シーン・贈る相手を、大和様の実際のサイトに合わせた
+        （PRESENTERS ROOM https://presentersroom.jp/ の構造）
+     3. 価格は税込表示（大和様のサイトに合わせる）
    ================================================================== */
-const CFG = { name:"GiftHub", ver:"0.9", key:"gifthub_v09" };
+const CFG = { name:"GiftHub", ver:"1.2", key:"gifthub_v12" };
 
+/* ===== 線画アイコン ==================================================
+   絵文字を使わず、同じ太さ・同じ角丸の線で統一します。
+   色は currentColor を継承するので、置いた場所の色になじみます。
+   =================================================================== */
+const IC = {
+  gift:    'M3 9h18v3H3zM4 12h16v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM12 9v12M12 9c-2 0-4-1-4-3s2-2 4 3zM12 9c2 0 4-1 4-3s-2-2-4 3z',
+  sweets:  'M5 20h14M6 20v-5a6 6 0 0 1 12 0v5M12 9V5M10 5h4',
+  gourmet: 'M6 3v8a2 2 0 0 0 4 0V3M8 11v10M18 3c-1.5 2-2 4-2 6v3h3M17 12v9',
+  drink:   'M6 4h10l-1 14a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2zM16 7h2a2 2 0 0 1 0 5h-2',
+  home:    'M4 11 12 4l8 7M6 10v10h12V10M10 20v-6h4v6',
+  towel:   'M5 4h14v16H5zM9 4v16M5 8h14M5 12h14M5 16h14',
+  beauty:  'M9 3h6v4H9zM8 7h8l1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM10 12h4',
+  flower:  'M12 13v8M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 7V3M12 13 8 9M12 13l4-4M12 13l-4 4M12 13l4 4',
+  exp:     'M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1 0 4H5a2 2 0 0 1 0-4 2 2 0 0 0 0-4zM14 6v12',
+  baby:    'M12 3a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V8a5 5 0 0 1 5-5zM9 9h.01M15 9h.01M9 13c1.5 1.5 4.5 1.5 6 0M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2',
+  goods:   'M6 7h12l1 13H5zM9 7V5a3 3 0 0 1 6 0v2',
+  catalog: 'M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2zM8 7h8M8 11h8M8 15h5',
+  /* シーン */
+  cake:    'M4 20h16M5 20v-6h14v6M7 14v-3M12 14v-3M17 14v-3M7 11V9M12 11V8M17 11V9',
+  ring:    'M12 21a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM9 9 7 4h10l-2 5M10 4l2 3 2-3',
+  bag:     'M5 8h14l1 12H4zM9 8V6a3 3 0 0 1 6 0v2M9 12h6',
+  heal:    'M12 4v8M8 8h8M4 14h16v6H4z',
+  season:  'M12 2v20M2 12h20M5 5l14 14M19 5 5 19',
+  /* 機能 */
+  chat:    'M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4z',
+  target:  'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',
+  note:    'M6 3h9l4 4v14H6zM15 3v4h4M9 12h6M9 16h4',
+  user:    'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1',
+  cog:     'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.4 3H9.6l-.4 2.6a7 7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.4 2.6h4.8l.4-2.6a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6c.07-.33.1-.66.1-1z',
+  search:  'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+  bell:    'M18 16V11a6 6 0 1 0-12 0v5l-2 3h16zM10 22h4',
+  check:   'M4 12.5 9.5 18 20 6',
+  ok:      'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
+  ng:      'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9 9l6 6M15 9l-6 6',
+  mid:     'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12h8',
+  arrow:   'M5 12h14M13 6l6 6-6 6',
+  back:    'M19 12H5M11 18l-6-6 6-6',
+  mail:    'M3 6h18v12H3zM3 7l9 6 9-6',
+  box:     'M3 8 12 3l9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v10',
+  clock:   'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  truck:   'M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+  phone:   'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM10 18h4',
+  card:    'M3 6h18v12H3zM3 10h18M6 15h4',
+  plan:    'M7 3v3M17 3v3M4 8h16M4 6h16v15H4zM8 12h3M8 16h7',
+  spark:   'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z'
+};
+function icon(k, size, sw){
+  const d = IC[k] || IC.gift;
+  return `<svg class="ic-s" viewBox="0 0 24 24" width="${size||22}" height="${size||22}"
+    fill="none" stroke="currentColor" stroke-width="${sw||1.6}"
+    stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+}
+
+/* ===== 気持ち（絵文字をやめ、線画に） =============================== */
 const EMOTIONS = [
-  { id:"thanks", icon:"🙏", label:"ありがとう", honest:false, t:"いつもありがとう。" },
-  { id:"cheer",  icon:"🔥", label:"がんばれ",   honest:false, t:"応援してる。無理しすぎないでね。" },
-  { id:"care",   icon:"🌙", label:"おつかれ",   honest:false, t:"最近大変そうだから、ちゃんと休んでね。" },
-  { id:"congra", icon:"🎉", label:"おめでとう", honest:false, t:"おめでとう。自分のことみたいにうれしい。" },
-  { id:"miss",   icon:"💭", label:"会いたい",   honest:false, t:"ふと思い出した。元気にしてる？" },
-  { id:"sorry",  icon:"🫧", label:"ごめんね",   honest:false, t:"ちゃんと謝りたかった。ごめんね。" },
-  { id:"duty",   icon:"📋", label:"正直、義理", honest:true,  t:"かたくならずに受け取ってもらえたら、うれしい。" },
-  { id:"self",   icon:"🫶", label:"自分のため", honest:true,  t:"どうしても渡したくなった。" },
-  { id:"crush",  icon:"🌷", label:"下心あり",   honest:true,  t:"よかったら、また話せたらうれしい。" }
+  { id:"thanks", ic:"flower", label:"ありがとう", honest:false, t:"いつもありがとう。" },
+  { id:"cheer",  ic:"spark",  label:"がんばれ",   honest:false, t:"応援してる。無理しすぎないでね。" },
+  { id:"care",   ic:"heal",   label:"おつかれ",   honest:false, t:"最近大変そうだから、ちゃんと休んでね。" },
+  { id:"congra", ic:"cake",   label:"おめでとう", honest:false, t:"おめでとう。自分のことみたいにうれしい。" },
+  { id:"miss",   ic:"mail",   label:"会いたい",   honest:false, t:"ふと思い出した。元気にしてる？" },
+  { id:"sorry",  ic:"chat",   label:"ごめんね",   honest:false, t:"ちゃんと謝りたかった。ごめんね。" },
+  { id:"duty",   ic:"catalog",label:"正直、義理", honest:true,  t:"かたくならずに受け取ってもらえたら、うれしい。" },
+  { id:"self",   ic:"user",   label:"自分のため", honest:true,  t:"どうしても渡したくなった。" },
+  { id:"crush",  ic:"ring",   label:"下心あり",   honest:true,  t:"よかったら、また話せたらうれしい。" }
 ];
 const EM = id => EMOTIONS.find(e => e.id === id) || EMOTIONS[0];
 
-/* ===== 商品 42点 =====================================================
-   ⚠️ 実在ブランド名は許諾が要るため、種類だけにしてあります。
-      keep = 日持ち（AIが「会える日に渡すのが向いています」と言うために使います）
-      cold = 要冷蔵・冷凍
-   =================================================================== */
+/* ===== カテゴリ（大和様 PRESENTERS ROOM の構造に合わせる） ========= */
+const CATS = [
+  { id:"sweets",  name:"スイーツ",            ic:"sweets",  sub:"クッキー・チョコ・焼菓子・和菓子" },
+  { id:"gourmet", name:"グルメ",              ic:"gourmet", sub:"惣菜・グロッサリー・生鮮" },
+  { id:"drink",   name:"飲料・お酒",          ic:"drink",   sub:"コーヒー・紅茶・日本酒" },
+  { id:"home",    name:"ホームリビング",      ic:"home",    sub:"キッチン・テーブルウェア・家電" },
+  { id:"towel",   name:"タオル・ハンカチ",    ic:"towel",   sub:"今治・ガーゼ" },
+  { id:"beauty",  name:"フレグランス・コスメ",ic:"beauty",  sub:"香り・スキンケア・洗剤" },
+  { id:"goods",   name:"雑貨",                ic:"goods",   sub:"メンズ・レディース" },
+  { id:"exp",     name:"体験",                ic:"exp",     sub:"食事・アクティビティ" },
+  { id:"baby",    name:"ベビーキッズ",        ic:"baby",    sub:"出産祝い・内祝い" },
+  { id:"catalog", name:"カタログギフト",      ic:"catalog", sub:"相手が選べる" }
+];
+const CAT = id => CATS.find(c => c.id === id) || CATS[0];
+
+/* ===== 贈るシーン（大和様の分類） ================================== */
+const SCENES = [
+  { id:"bd",     name:"誕生日",        ic:"cake" },
+  { id:"thanks", name:"お礼・感謝",    ic:"flower" },
+  { id:"celeb",  name:"お祝い",        ic:"spark" },
+  { id:"job",    name:"就職・昇進・退職", ic:"bag" },
+  { id:"move",   name:"新築・引越",    ic:"home" },
+  { id:"heal",   name:"快気・お見舞い", ic:"heal" },
+  { id:"season", name:"季節のご挨拶",  ic:"season" },
+  { id:"wed",    name:"結婚・出産",    ic:"ring" }
+];
+
+/* ===== 贈る相手（大和様の分類） ==================================== */
+const RELS = ["親友","女友達","男友達","彼氏・彼女","同僚","上司","家族","両親"];
+
+/* ===== 商品 48点（すべて税込。大和様のカテゴリに合わせて分類） ===== */
 const GIFTS = [
-  { id:"i01", icon:"☕", name:"ドリップコーヒー 6袋",     price:1620, cat:"のみもの", keep:180 },
-  { id:"i02", icon:"🍪", name:"焼き菓子の詰め合わせ",     price:1080, cat:"おかし",   keep:30 },
-  { id:"i03", icon:"🌙", name:"アロマオイル（おやすみ）", price:2200, cat:"リラックス", keep:0 },
-  { id:"i04", icon:"🛁", name:"入浴剤セット",             price:880,  cat:"リラックス", keep:0 },
-  { id:"i05", icon:"🌸", name:"ガーゼハンカチ",           price:770,  cat:"こもの",   keep:0 },
-  { id:"i06", icon:"🍵", name:"お茶のミックスボックス",   price:1620, cat:"のみもの", keep:365 },
-  { id:"i07", icon:"💐", name:"一輪の花＋メッセージ",     price:1490, cat:"はな",     keep:5 },
-  { id:"i08", icon:"🧁", name:"小さなケーキ 12個入",      price:1080, cat:"おかし",   keep:14 },
-  { id:"i09", icon:"🤲", name:"ハンドクリーム",           price:2200, cat:"コスメ",   keep:0 },
-  { id:"i10", icon:"🥢", name:"箸置き 5枚セット",         price:2200, cat:"くらし",   keep:0 },
-  { id:"i11", icon:"🍜", name:"うどんの詰め合わせ",       price:2160, cat:"たべもの", keep:180 },
-  { id:"i12", icon:"🪷", name:"お香（ホワイトセージ）",   price:1430, cat:"リラックス", keep:0 },
-  { id:"i13", icon:"🍓", name:"季節のフルーツゼリー",     price:2160, cat:"おかし",   keep:60 },
-  { id:"i14", icon:"🧼", name:"ハンドソープ",             price:1650, cat:"くらし",   keep:0 },
-  { id:"i15", icon:"🫖", name:"ティーバッグのギフト",     price:1080, cat:"のみもの", keep:365 },
-  { id:"i16", icon:"🎫", name:"近くのカフェの体験チケット", price:3000, cat:"たいけん", keep:180 },
-  { id:"i17", icon:"📓", name:"小さなノート",             price:1200, cat:"こもの",   keep:0 },
-  { id:"i18", icon:"🍫", name:"チョコレートの箱",         price:1100, cat:"おかし",   keep:90 },
-  { id:"i19", icon:"🍰", name:"バタークリームケーキ",     price:4100, cat:"おかし",   keep:3, cold:true },
-  { id:"i20", icon:"🥧", name:"ホテルのアップルパイ",     price:3200, cat:"おかし",   keep:3, cold:true },
-  { id:"i21", icon:"🍮", name:"プリンの詰め合わせ 6個",   price:2700, cat:"おかし",   keep:5, cold:true },
-  { id:"i22", icon:"🧋", name:"タピオカミルクティーの素", price:1500, cat:"のみもの", keep:120 },
-  { id:"i23", icon:"🍯", name:"はちみつ 3種セット",       price:2800, cat:"たべもの", keep:720 },
-  { id:"i24", icon:"🧂", name:"だしパックの詰め合わせ",   price:1900, cat:"たべもの", keep:180 },
-  { id:"i25", icon:"🫒", name:"オリーブオイル（小瓶）",   price:2400, cat:"たべもの", keep:540 },
-  { id:"i26", icon:"🥫", name:"スープの詰め合わせ 8食",   price:2600, cat:"たべもの", keep:365 },
-  { id:"i27", icon:"🧴", name:"ヘアオイル",               price:2900, cat:"コスメ",   keep:0 },
-  { id:"i28", icon:"💄", name:"リップバーム 2本",         price:1800, cat:"コスメ",   keep:0 },
-  { id:"i29", icon:"🧖", name:"フェイスマスク 5枚",       price:1300, cat:"コスメ",   keep:0 },
-  { id:"i30", icon:"🧦", name:"あたたかい靴下 2足",       price:1600, cat:"こもの",   keep:0 },
-  { id:"i31", icon:"🧣", name:"やわらかいストール",       price:3800, cat:"こもの",   keep:0 },
-  { id:"i32", icon:"👜", name:"たためるエコバッグ",       price:1980, cat:"こもの",   keep:0 },
-  { id:"i33", icon:"🪴", name:"小さな観葉植物",           price:2500, cat:"インテリア", keep:0 },
-  { id:"i34", icon:"🕯", name:"アロマキャンドル",         price:2300, cat:"インテリア", keep:0 },
-  { id:"i35", icon:"🖼", name:"小さなフォトフレーム",     price:1700, cat:"インテリア", keep:0 },
-  { id:"i36", icon:"🍽", name:"小皿 2枚セット",           price:2600, cat:"くらし",   keep:0 },
-  { id:"i37", icon:"🧺", name:"今治のタオル 2枚",         price:3300, cat:"くらし",   keep:0 },
-  { id:"i38", icon:"☂️", name:"軽い折りたたみ傘",         price:3500, cat:"くらし",   keep:0 },
-  { id:"i39", icon:"🎧", name:"映画の鑑賞チケット",       price:2000, cat:"たいけん", keep:180 },
-  { id:"i40", icon:"🍴", name:"レストランの食事券",       price:5000, cat:"たいけん", keep:180 },
-  { id:"i41", icon:"🎹", name:"音楽配信の3か月ギフト",     price:2900, cat:"たいけん", keep:365 },
-  { id:"i42", icon:"📚", name:"電子書籍のギフト券",       price:1500, cat:"たいけん", keep:365 }
+  { id:"i01", cat:"drink",   name:"ドリップコーヒー 6袋",         price:1620, keep:180 },
+  { id:"i02", cat:"sweets",  name:"焼菓子の詰め合わせ",           price:1080, keep:30 },
+  { id:"i03", cat:"beauty",  name:"アロマオイル（おやすみ）",     price:2200, keep:0 },
+  { id:"i04", cat:"beauty",  name:"入浴剤セット",                 price:880,  keep:0 },
+  { id:"i05", cat:"towel",   name:"ガーゼハンカチ",               price:770,  keep:0 },
+  { id:"i06", cat:"drink",   name:"お茶のミックスボックス",       price:1620, keep:365 },
+  { id:"i07", cat:"goods",   name:"一輪挿しとドライフラワー",     price:1490, keep:0 },
+  { id:"i08", cat:"sweets",  name:"ひとくちケーキ 12個入",        price:1080, keep:14 },
+  { id:"i09", cat:"beauty",  name:"ハンドクリーム",               price:2200, keep:0 },
+  { id:"i10", cat:"home",    name:"箸置き 5枚セット",             price:2200, keep:0 },
+  { id:"i11", cat:"gourmet", name:"稲庭うどん 詰め合わせ",        price:2160, keep:180 },
+  { id:"i12", cat:"beauty",  name:"お香（ホワイトセージ）",       price:1430, keep:0 },
+  { id:"i13", cat:"sweets",  name:"季節のフルーツゼリー 15種",    price:2160, keep:60 },
+  { id:"i14", cat:"home",    name:"ハンドソープ",                 price:1650, keep:0 },
+  { id:"i15", cat:"drink",   name:"ティーバッグのギフト",         price:1080, keep:365 },
+  { id:"i16", cat:"exp",     name:"カフェのペアチケット",         price:3000, keep:180 },
+  { id:"i17", cat:"goods",   name:"布張りのノート",               price:1200, keep:0 },
+  { id:"i18", cat:"sweets",  name:"ショコラアソート 9粒",         price:1100, keep:90 },
+  { id:"i19", cat:"sweets",  name:"バタークリームケーキ 15cm",    price:4104, keep:3, cold:true },
+  { id:"i20", cat:"sweets",  name:"ホテルのアップルパイ",         price:3240, keep:3, cold:true },
+  { id:"i21", cat:"sweets",  name:"プリン詰め合わせ 6個",         price:2700, keep:5, cold:true },
+  { id:"i22", cat:"drink",   name:"フレーバーティー 5種",         price:1500, keep:365 },
+  { id:"i23", cat:"gourmet", name:"はちみつ 3種セット",           price:2808, keep:720 },
+  { id:"i24", cat:"gourmet", name:"だしパック 詰め合わせ",        price:1944, keep:180 },
+  { id:"i25", cat:"gourmet", name:"オリーブオイル（小瓶）",       price:2430, keep:540 },
+  { id:"i26", cat:"gourmet", name:"レトルトスープ 8食",           price:2592, keep:365 },
+  { id:"i27", cat:"beauty",  name:"ヘアオイル",                   price:2970, keep:0 },
+  { id:"i28", cat:"beauty",  name:"リップバーム 2本",             price:1760, keep:0 },
+  { id:"i29", cat:"beauty",  name:"フェイスマスク 5枚",           price:1320, keep:0 },
+  { id:"i30", cat:"goods",   name:"シルク混の靴下 2足",           price:1650, keep:0 },
+  { id:"i31", cat:"goods",   name:"やわらかいストール",           price:3850, keep:0 },
+  { id:"i32", cat:"goods",   name:"たためるエコバッグ",           price:1980, keep:0 },
+  { id:"i33", cat:"home",    name:"小さな観葉植物",               price:2500, keep:0 },
+  { id:"i34", cat:"beauty",  name:"アロマキャンドル",             price:2310, keep:0 },
+  { id:"i35", cat:"home",    name:"木のフォトフレーム",           price:1760, keep:0 },
+  { id:"i36", cat:"home",    name:"取り皿 2枚セット",             price:2640, keep:0 },
+  { id:"i37", cat:"towel",   name:"今治のフェイスタオル 2枚",     price:3300, keep:0 },
+  { id:"i38", cat:"goods",   name:"軽量の折りたたみ傘",           price:3520, keep:0 },
+  { id:"i39", cat:"exp",     name:"映画の鑑賞チケット 2枚",       price:2000, keep:180 },
+  { id:"i40", cat:"exp",     name:"レストランの食事券",           price:5000, keep:180 },
+  { id:"i41", cat:"exp",     name:"音楽配信 3か月ギフト",         price:2900, keep:365 },
+  { id:"i42", cat:"exp",     name:"電子書籍のギフト券",           price:1500, keep:365 },
+  { id:"i43", cat:"catalog", name:"カタログギフト 3,800円コース", price:3800, keep:0 },
+  { id:"i44", cat:"catalog", name:"カタログギフト 5,800円コース", price:5800, keep:0 },
+  { id:"i45", cat:"baby",    name:"ベビーソープ＆タオル",         price:3300, keep:0 },
+  { id:"i46", cat:"baby",    name:"おくるみブランケット",         price:4400, keep:0 },
+  { id:"i47", cat:"towel",   name:"ウォッシュタオル 3枚",         price:1980, keep:0 },
+  { id:"i48", cat:"gourmet", name:"お茶漬け・ふりかけ 8食",       price:1620, keep:300 }
 ];
 const GI = id => GIFTS.find(g => g.id === id);
+const gicon = g => icon(CAT(g.cat).ic, 26, 1.5);
 
-/* ラッピング（大和様＝ギフト専門。ここは実務で必ず要ります） */
+/* ラッピング（大和様はギフト専門。ここは実務で必ず要ります） */
 const WRAPS = [
-  { id:"w0", icon:"📦", name:"そのまま",        price:0,   note:"包装なし" },
-  { id:"w1", icon:"🎀", name:"かんたん包装",    price:110, note:"リボン付き" },
-  { id:"w2", icon:"🎁", name:"化粧箱入り",      price:330, note:"きちんと見せたいとき" },
-  { id:"w3", icon:"🏮", name:"のし（紅白蝶結び）", price:220, note:"お祝い・内祝い" }
+  { id:"w0", ic:"box",     name:"そのまま",          price:0,   note:"包装なし" },
+  { id:"w1", ic:"gift",    name:"かんたん包装",      price:110, note:"リボン付き" },
+  { id:"w2", ic:"catalog", name:"化粧箱入り",        price:330, note:"きちんと見せたいとき" },
+  { id:"w3", ic:"ring",    name:"のし（紅白蝶結び）", price:220, note:"お祝い・内祝い" }
 ];
 const WR = id => WRAPS.find(w => w.id === id) || WRAPS[0];
 
-/* 支払い方法（疑似） */
 const PAYS = [
-  { id:"card", icon:"💳", name:"クレジットカード", note:"いちばん早い" },
-  { id:"pay",  icon:"📱", name:"スマホ決済",       note:"PayPay・楽天ペイなど" },
-  { id:"conv", icon:"🏪", name:"コンビニ払い",     note:"手数料 150円", fee:150 }
+  { id:"card", ic:"card",  name:"クレジットカード", note:"いちばん早い" },
+  { id:"pay",  ic:"phone", name:"スマホ決済",       note:"PayPay・楽天ペイなど" },
+  { id:"conv", ic:"home",  name:"コンビニ払い",     note:"手数料 150円", fee:150 }
 ];
 const PY = id => PAYS.find(p => p.id === id) || PAYS[0];
 
-/* 受け取り方法（ソーシャルギフトの肝：住所を贈り主に教えない） */
 const RECVS = [
-  { id:"deli", icon:"🚚", name:"自宅に届ける",       note:"住所を入力します。贈った人には伝わりません" },
-  { id:"digi", icon:"📱", name:"デジタルで受け取る", note:"住所不要。すぐ使えます" }
+  { id:"deli", ic:"truck", name:"自宅に届ける",       note:"住所を入力します。贈った人には伝わりません" },
+  { id:"digi", ic:"phone", name:"デジタルで受け取る", note:"住所不要。すぐ使えます" }
 ];
 const SLOTS = ["指定なし","午前中","14〜16時","16〜18時","18〜20時","19〜21時"];
 
@@ -301,15 +402,15 @@ function seed(name){
   return {
     user:{ id:"u1", name:name || "わたし" },
     friends:[
-      { id:"f1", name:"ミナ",   color:"#E0614A", rel:"高校の友人", bd:"11-08" },
+      { id:"f1", name:"ミナ",   color:"#C0563F", rel:"高校の友人", bd:"11-08" },
       { id:"f2", name:"ハルキ", color:"#3E7A58", rel:"大学の友人", bd:"02-14" },
-      { id:"f3", name:"ユイ",   color:"#7B5EA7", rel:"バイト先",   bd:"06-30" }
+      { id:"f3", name:"ユイ",   color:"#6B5B8E", rel:"バイト先",   bd:"06-30" }
     ],
     gifts:[{
       id:"g1", no:"GH-20251022-0001", toId:"f1", sentAt:"2025-10-22",
       intent:{ emotion:"thanks" },
       message:"去年の文化祭、ほんとに助かった。ずっと言えてなかったけど、ありがとう。",
-      gift:{ id:"i01", icon:"☕", name:"ドリップコーヒー 6袋", price:1620 },
+      gift:{ id:"i01", cat:"drink", name:"ドリップコーヒー 6袋", price:1620 },
       wrap:{ id:"w1", name:"かんたん包装", price:110 }, pay:"card", total:1730,
       receive:{ method:"deli", slot:"18〜20時", at:"2025-10-23" },
       reply:{ used:"u", comment:"毎朝これ飲んでる。また行こうね", at:"2025-10-25" }
@@ -343,9 +444,7 @@ function today(){ return new Date().toISOString().slice(0,10); }
 function pack(o){ return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/,""); }
 function unpack(s){ try{ return JSON.parse(decodeURIComponent(escape(atob(s)))); }catch(e){ return null; } }
 function orderNo(){
-  const d = today().replace(/-/g,"");
-  const n = String(S.gifts.length + 1).padStart(4,"0");
-  return "GH-" + d + "-" + n;
+  return "GH-" + today().replace(/-/g,"") + "-" + String(S.gifts.length + 1).padStart(4,"0");
 }
 function prefsOf(fid){
   const map = {};
@@ -368,7 +467,7 @@ function onThisDay(){
   return S.gifts.filter(g => g.sentAt.slice(5) === md && g.sentAt.slice(0,4) !== today().slice(0,4));
 }
 function yearsAgo(d){ return Number(today().slice(0,4)) - Number(d.slice(0,4)); }
-const BUDGETS = [ ["すべて",null], ["〜1,500円",[0,1500]], ["1,500〜2,500円",[1500,2500]], ["2,500円〜",[2500,99999]] ];
+const BUDGETS = [ ["すべて",null], ["〜1,500円",[0,1500]], ["1,500〜3,000円",[1500,3000]], ["3,000円〜",[3000,99999]] ];
 
 const LOOP = ["きもち","贈る","届く","返る","残る"];
 function loopSVG(active, size){
@@ -380,14 +479,14 @@ function loopSVG(active, size){
   return `<div class="loop"><svg width="${sz}" height="${sz}" viewBox="0 0 240 240">
     <circle class="trk" cx="120" cy="120" r="76"></circle>
     <circle class="arc" cx="120" cy="120" r="76" transform="rotate(-90 120 120)"></circle>
-    <polygon points="120,35 129,44 120,53" fill="#E0614A"></polygon>
-    ${pts.map((p,i)=>`<circle class="nd ${i===active?"on":""}" cx="${p.nx.toFixed(1)}" cy="${p.ny.toFixed(1)}" r="7"></circle>`).join("")}
+    <polygon points="120,35 128,44 120,53" fill="#C0563F"></polygon>
+    ${pts.map((p,i)=>`<circle class="nd ${i===active?"on":""}" cx="${p.nx.toFixed(1)}" cy="${p.ny.toFixed(1)}" r="6"></circle>`).join("")}
     ${pts.map((p,i)=>`<text class="tx ${i===active?"on":""}" x="${p.tx.toFixed(1)}" y="${p.ty.toFixed(1)}" text-anchor="middle">${LOOP[i]}</text>`).join("")}
-    <text class="ctr" x="120" y="115" text-anchor="middle">GIFT</text>
-    <text class="ctr" x="120" y="131" text-anchor="middle">LOOP</text>
+    <text class="ctr" x="120" y="116" text-anchor="middle">GIFT</text>
+    <text class="ctr" x="120" y="132" text-anchor="middle">LOOP</text>
   </svg></div>`;
 }
-const USED = { u:"使ってる", s:"まだ使ってない", y:"もう無くなった" };
+const USED = { u:"使っています", s:"まだ使っていません", y:"もうなくなりました" };
 const USEDC = { u:"u", s:"s", y:"y" };
 
 /* ===== 追加スタイル（ヘッダー・ドロワー・ショップ） ================= */
@@ -471,7 +570,7 @@ function header(title){
   return `<div class="hd">
     <button class="bg" data-a="menu"><i></i><i></i><i></i></button>
     <div class="lg">${title ? esc(title) : `<span>${CFG.name}</span>`}</div>
-    <button class="rt" data-a="note">🔔${n?`<b></b>`:""}</button>
+    <button class="rt" data-a="note">${icon("bell",21)}${n?`<b></b>`:""}</button>
   </div>`;
 }
 function drawer(){
@@ -481,18 +580,18 @@ function drawer(){
     <div class="uh">
       <div class="av" style="background:var(--grad)">${esc((S.user&&S.user.name||"？").slice(0,1))}</div>
       <div><div style="font-weight:800;font-size:15.5px">${esc(S.user&&S.user.name||"ゲスト")}</div>
-      <div class="sub" style="margin:0;font-size:11.5px">${me&&S.showDiag!==false?DT(me.type).icon+" "+DT(me.type).name:"ギフトタイプ未設定"}</div></div>
+      <div class="sub" style="margin:0;font-size:11.5px">${me&&S.showDiag!==false?DT(me.type).name:"ギフトタイプ未設定"}</div></div>
     </div>
     <div class="sec">ギフトを贈る</div>
-    <div class="mi" data-a="go-friends"><span class="e">🎁</span>だれかに贈る</div>
-    <div class="mi" data-a="go-shop"><span class="e">🛍</span>ギフトを探す</div>
-    <div class="mi" data-a="talk"><span class="e">🤖</span>ギフトーク AI</div>
+    <div class="mi" data-a="go-friends"><span class="e">${icon("gift",19)}</span>だれかに贈る</div>
+    <div class="mi" data-a="go-shop"><span class="e">${icon("search",19)}</span>ギフトを探す</div>
+    <div class="mi" data-a="talk"><span class="e">${icon("chat",19)}</span>ギフトーク AI</div>
     <div class="sec">知る・残す</div>
-    <div class="mi" data-a="diag"><span class="e">🎯</span>ギフト診断</div>
-    <div class="mi" data-a="note"><span class="e">📒</span>2人のノート</div>
+    <div class="mi" data-a="diag"><span class="e">${icon("target",19)}</span>ギフト診断</div>
+    <div class="mi" data-a="note"><span class="e">${icon("note",19)}</span>2人のノート</div>
     <div class="sec">設定</div>
-    <div class="mi" data-a="settings"><span class="e">⚙️</span>設定</div>
-    <div class="mi" data-a="logout"><span class="e">↩️</span>ログアウト</div>
+    <div class="mi" data-a="settings"><span class="e">${icon("cog",19)}</span>設定</div>
+    <div class="mi" data-a="logout"><span class="e">${icon("back",19)}</span>ログアウト</div>
     <p class="sub" style="padding:18px 20px 0;font-size:10.5px">${CFG.name} v${CFG.ver}　プロトタイプ</p>
   </div></div>`;
 }
@@ -521,8 +620,8 @@ home(){
   const me = S.diag;
   const pop = [GIFTS[18], GIFTS[19], GIFTS[0], GIFTS[36], GIFTS[12], GIFTS[39]];
   const rec = me ? GIFTS.map(g=>({g,s:diagScore({type:me.type,sc:me.sc},g)})).sort((a,b)=>b.s-a.s).slice(0,6).map(x=>x.g) : [];
-  const cats = [["おかし","🍪"],["のみもの","☕"],["コスメ","💄"],["くらし","🧺"],["たいけん","🎫"],["こもの","🎀"]];
-  const scenes = [["誕生日","🎂"],["お礼","🙏"],["お祝い","🎉"],["おつかれ","🌙"],["ごめんね","🫧"],["久しぶり","💭"]];
+  const cats = CATS.slice(0,6);
+  const scenes = SCENES.slice(0,6);
   return `
 ${header()}
 <div class="scr" style="padding-top:18px">
@@ -537,13 +636,13 @@ ${header()}
   </div>`}
 
   ${newAns.length ? `<div class="card ok m16" data-a="ans" data-id="${newAns[0].id}" style="cursor:pointer">
-    <p class="jlab" style="color:var(--ok)">✉ 好みの返事がとどいています</p>
+    <p class="jlab" style="color:var(--ok)">好みの返事がとどいています</p>
     <p style="font-size:15px;margin-top:5px"><b>${esc(friend(newAns[0].toId).name)}さん</b>が ◯× で答えてくれました →</p></div>` : ""}
 
   <div class="sc">シーンから探す</div>
   <div class="scs">贈る理由から選べます</div>
   <div class="gr">${scenes.map(s=>`
-    <button class="tl2" data-a="go-friends"><i>${s[1]}</i><b>${s[0]}</b></button>`).join("")}</div>
+    <button class="tl2" data-a="go-friends">${icon(s.ic,24)}<b>${esc(s.name)}</b></button>`).join("")}</div>
 
   <div class="sc">価格から探す</div>
   <div class="scs">相手との関係で、ちょうどいい額が変わります</div>
@@ -553,35 +652,35 @@ ${header()}
   <div class="sc">カテゴリから探す</div>
   <div class="scs">全 ${GIFTS.length} 点</div>
   <div class="gr">${cats.map(c=>`
-    <button class="tl2" data-a="shopcat" data-v="${esc(c[0])}"><i>${c[1]}</i><b>${c[0]}</b>
-      <span>${GIFTS.filter(g=>g.cat===c[0]).length}点</span></button>`).join("")}</div>
+    <button class="tl2" data-a="shopcat" data-v="${c.id}">${icon(c.ic,24)}<b>${esc(c.name)}</b>
+      <span>${GIFTS.filter(g=>g.cat===c.id).length}点</span></button>`).join("")}</div>
 
   <div class="sc">いま人気のギフト</div>
   <div class="scs">贈られている数が多い順</div>
   <div class="hs">${pop.map((g,i)=>`
     <div class="pc" data-a="gdetail" data-id="${g.id}">
-      <div class="im">${g.icon}</div>
+      <div class="im">${gicon(g)}</div>
       <div style="margin-top:7px"><span class="rk">${i+1}位</span></div>
       <div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div>
     </div>`).join("")}</div>
 
   ${me && S.showDiag !== false ? `
   <div class="sc">${esc(S.user.name)}さんへのおすすめ</div>
-  <div class="scs">${DT(me.type).icon} ${DT(me.type).name} の診断結果から</div>
+  <div class="scs">${icon(DT(me.type).ic,20)} ${DT(me.type).name} の診断結果から</div>
   <div class="hs">${rec.map(g=>`
     <div class="pc" data-a="gdetail" data-id="${g.id}">
-      <div class="im">${g.icon}</div>
+      <div class="im">${gicon(g)}</div>
       <div class="nm" style="margin-top:9px">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div>
     </div>`).join("")}</div>` : `
   <div class="card hl m24">
-    <p class="jlab">🎯 まだ診断していません</p>
+    <p class="jlab">まだ診断していません</p>
     <p style="font-size:14.5px;margin-top:6px"><b>8問・1分</b>で、あなたがどんなギフトを喜ぶかが分かります。<br>
     結果のリンクを配っておけば、<b>友だちはあなたの好みを知った上で選べます。</b></p>
     <button class="btn" style="margin-top:12px" data-a="diag">ギフト診断をする</button>
   </div>`}
 
-  <button class="btn m24" data-a="go-friends">🎁 だれかに贈る</button>
-  <button class="btn s" style="margin-top:10px" data-a="talk">🤖 ギフトーク AI に聞く</button>
+  <button class="btn m24" data-a="go-friends">だれかに贈る</button>
+  <button class="btn s" style="margin-top:10px" data-a="talk">ギフトーク AI に聞く</button>
 </div>`},
 
 /* --- 相手を選ぶ（元のホーム） --- */
@@ -593,7 +692,7 @@ friends(){
 ${header("だれに贈る？")}
 <div class="scr" style="padding-top:18px">
   ${bds.length ? `<div class="card hl">
-    <p class="jlab" style="color:var(--accent)">🎂 もうすぐ誕生日</p>
+    <p class="jlab" style="color:var(--accent)">もうすぐ誕生日</p>
     ${bds.slice(0,2).map(b=>`
       <div class="row" data-a="pick" data-id="${b.f.id}" style="border-bottom:0;padding:11px 0">
         <div class="av" style="background:${b.f.color}">${esc(b.f.name.slice(0,1))}</div>
@@ -602,7 +701,7 @@ ${header("だれに贈る？")}
         <div style="color:#DCCFC4;font-size:21px">›</div></div>`).join("")}
   </div>` : ""}
   ${plans.length ? `<div class="card m16" style="border-color:rgba(123,94,167,.35)">
-    <p class="jlab" style="color:#7B5EA7">📋 進行中のギフト計画</p>
+    <p class="jlab" style="color:#7B5EA7">進行中のギフト計画</p>
     ${plans.slice(0,2).map(p=>{
       const dn = p.steps.filter(s=>s.ok).length;
       return `<div data-a="plan" data-id="${p.id}" style="cursor:pointer;margin-top:9px">
@@ -614,7 +713,7 @@ ${header("だれに贈る？")}
   <div class="card m16">${S.friends.map(f=>{
     const l = giftsTo(f.id)[0], p = prefsOf(f.id);
     const ny = Object.values(p).filter(v=>v==="y").length;
-    const dg = f.diag ? DT(f.diag).icon+" "+DT(f.diag).name : null;
+    const dg = f.diag ? DT(f.diag).name : null;
     const nt = dg ? `${dg}${ny?`　／好み ${ny}件`:""}`
             : (l ? `${l.sentAt.slice(5).replace("-","/")}　${esc(l.gift.name)}${l.reply?"　✓返事あり":""}`
                  : (ny ? `好みを ${ny} 件 知っています` : "まだ何も知りません"));
@@ -623,7 +722,7 @@ ${header("だれに贈る？")}
       <div class="m"><div class="nm">${esc(f.name)}</div><div class="nt">${esc(nt)}</div></div>
       <div style="color:#DCCFC4;font-size:21px">›</div></div>`}).join("")}</div>
   ${ago.length ? ago.slice(0,1).map(g=>`<div class="ago">
-      <p class="y">⟳ ${yearsAgo(g.sentAt)}年前の今日</p>
+      <p class="y">${yearsAgo(g.sentAt)}年前の今日</p>
       <p style="font-size:15px;margin-top:6px"><b>${esc(friend(g.toId).name)}さん</b>に
         「${esc(g.gift.name)}」を贈りました。</p>
       ${g.reply&&g.reply.comment?`<p style="font-size:14px;margin-top:9px;padding:11px;background:rgba(255,255,255,.75);border-radius:12px">「${esc(g.reply.comment)}」</p>`:""}
@@ -651,7 +750,7 @@ ${header("設定")}
   <p class="jlab m24">ギフト診断</p>
   <div class="card m12">
     ${me ? `<div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line)">
-      <div style="font-size:30px">${DT(me.type).icon}</div>
+      <div style="font-size:30px">${icon(DT(me.type).ic,20)}</div>
       <div><div style="font-weight:800;font-size:15.5px">${DT(me.type).name}</div>
       <div class="sub" style="margin:0;font-size:11.5px">${esc(me.at||"")} に診断</div></div>
     </div>` : `<p class="sub" style="margin:0 0 12px">まだ診断していません</p>`}
@@ -720,11 +819,11 @@ ${header(f.name + "さんに贈る")}
   <div style="display:flex;align-items:center;gap:13px">
     <div class="av" style="background:${f.color};width:52px;height:52px;flex:0 0 52px;font-size:19px">${esc(f.name.slice(0,1))}</div>
     <div><h1 style="font-size:21px">${esc(f.name)}さん</h1>
-    <p class="sub" style="margin:0;font-size:12.5px">${esc(f.rel||"")}${f.bd?`　🎂 ${f.bd.replace("-","/")}`:""}</p></div>
+    <p class="sub" style="margin:0;font-size:12.5px">${esc(f.rel||"")}${f.bd?`　${f.bd.replace("-","/")}`:""}</p></div>
   </div>
   ${d ? `<div class="card m16" style="background:var(--grad-soft);border-color:transparent">
-    <p class="jlab">🎯 ${esc(f.name)}さんのギフトタイプ</p>
-    <p style="font-size:18px;font-weight:800;margin-top:4px">${d.icon} ${d.name}</p>
+    <p class="jlab">${esc(f.name)}さんのギフトタイプ</p>
+    <p style="font-size:18px;font-weight:800;margin-top:4px">${icon(d.ic,18)} ${d.name}</p>
     <p style="font-size:13.5px;margin-top:5px">${esc(d.sub)}</p>
     <div class="map">${d.like.map(c=>`<span class="tag">◯ ${esc(c)}</span>`).join("")}
       ${d.avoid.map(c=>`<span class="tag x">${esc(c)}</span>`).join("")}</div>
@@ -736,13 +835,13 @@ ${header(f.name + "さんに贈る")}
       ${Object.keys(p).filter(k=>p[k]==="n").map(k=>`<span class="tag x">${esc(GI(k)?GI(k).cat:"")}</span>`).join("")}
     </div></div>` : ""}
   <div class="m16">
-    <div class="pick main" data-a="toItems"><span class="em">🎁</span>
+    <div class="pick main" data-a="toItems"><span class="em"></span>
       <div><b>そのまま贈る</b><span>${d?"診断結果に合わせて候補を出します":(ny?`◯がついた ${ny} 件を優先します`:"候補を3つ出します")}</span></div></div>
-    <div class="pick" data-a="toAsk"><span class="em">🙆</span>
+    <div class="pick" data-a="toAsk"><span class="em"></span>
       <div><b>好みを聞く</b><span>候補を ◯× で選んでもらう。<br><b>何を贈るつもりかは、相手に分かりません</b></span></div></div>
-    <div class="pick" data-a="newplan"><span class="em">📋</span>
+    <div class="pick" data-a="newplan"><span class="em"></span>
       <div><b>ギフト計画を立てる</b><span>先にゴールを決めて、やることを順番に</span></div></div>
-    <div class="pick" data-a="talk"><span class="em">🤖</span>
+    <div class="pick" data-a="talk"><span class="em"></span>
       <div><b>AIに相談する</b><span>相手の趣味を自分が知らないときに</span></div></div>
   </div>
 </div>`},
@@ -762,7 +861,7 @@ ${header("好みを聞く")}
   <p class="jlab m16">${sel.length} 件えらび中（4〜8件がおすすめ）</p>
   <div class="m12">${list.slice(0,10).map(g=>`
     <div class="item ${sel.includes(g.id)?"on":""}" data-a="selA" data-id="${g.id}">
-      <div class="ic">${g.icon}</div>
+      <div class="ic">${gicon(g)}</div>
       <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${esc(g.cat)}</div></div>
       <div style="color:${sel.includes(g.id)?"var(--accent)":"#DCCFC4"};font-size:18px">${sel.includes(g.id)?"✓":"○"}</div>
     </div>`).join("")}</div>
@@ -785,8 +884,8 @@ ${header("好みを聞く")}
     <p class="sub" style="font-size:11.5px;margin-top:8px">※ギフトのことは、ひとことも書いていません</p>
   </div>
   <div class="url m16">${esc(url)}</div>
-  <button class="btn m12" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
-  <button class="btn o" data-a="openr" data-v="${esc(url)}">▶ 相手の画面を見る（デモ用）</button>
+  <button class="btn m12" data-a="copy" data-v="${esc(url)}">リンクをコピーする</button>
+  <button class="btn o" data-a="openr" data-v="${esc(url)}">▸ 相手の画面を見る（デモ用）</button>
   <button class="btn g" data-a="home">ホームへ</button>
 </div>`},
 
@@ -804,7 +903,7 @@ pans(){
     const g = GI(id); if(!g) return "";
     const v = ans[id];
     return `<div class="pf ${v==="y"?"yes":v==="n"?"no":v==="m"?"may":""}">
-      <div class="ic">${g.icon}</div>
+      <div class="ic">${gicon(g)}</div>
       <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${esc(g.cat)}</div></div>
       <div class="ox">
         <button data-a="pa" data-id="${id}" data-v="y" class="${v==="y"?"on":""}">◯</button>
@@ -818,7 +917,7 @@ pans(){
 
 psent(){ return `
 <div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
-  <div style="font-size:56px">🙆</div>
+  <div style="font-size:56px"></div>
   <h1 class="m16">ありがとうございます</h1>
   <p class="sub">答えてくれた内容は、<b>相手に届きます。</b><br>何に使われるかは、お楽しみに。</p>
   <button class="btn m24" data-a="home">自分も使ってみる</button>
@@ -842,7 +941,7 @@ ${header("返事がとどきました")}
   ${ys.length?`<p class="jlab m16">◯ がついたもの</p>
   <div class="m12">${ys.map(id=>{const g=GI(id);return `
     <div class="item" data-a="gpick" data-id="${id}">
-      <div class="ic">${g.icon}</div>
+      <div class="ic">${gicon(g)}</div>
       <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div></div>
       <div style="color:var(--ok);font-size:17px;font-weight:800">◯</div></div>`}).join("")}</div>`:""}
   ${ns.length?`<div class="card m16" style="background:#FAF7F4;border-color:transparent">
@@ -870,12 +969,12 @@ items(){
   <div class="m16">${list.map(g=>{
     const pv = p[g.id], dup = alreadySent(f.id, g.id);
     return `<div class="item ${d.giftId===g.id?"on":""} ${dup?"dup":""}" data-a="gi" data-id="${g.id}">
-      <div class="ic">${g.icon}</div>
+      <div class="ic">${gicon(g)}</div>
       <div class="m"><div class="nm">${esc(g.name)}${pv==="y"?`<span class="badge">◯ 好きと答えた</span>`:""}${dup?`<span class="badge w">前に贈った</span>`:""}</div>
       <div class="pr">${yen(g.price)}　<span style="opacity:.75">${esc(g.cat)}${g.keep?`／日持ち ${g.keep}日`:""}${g.cold?"／要冷蔵":""}</span></div></div>
       <div style="color:${d.giftId===g.id?"var(--accent)":"#DCCFC4"};font-size:18px">${d.giftId===g.id?"✓":"○"}</div>
     </div>`}).join("")}</div>
-  <button class="btn g" data-a="reroll" style="font-size:13px">↻ ほかの3つを見る</button>
+  <button class="btn g" data-a="reroll" style="font-size:13px">↺ ほかの3つを見る</button>
   <div class="card m12" style="background:#FAF6F2;border-color:transparent">
     <p class="jlab">この3つが出た理由</p>
     <p style="font-size:13px;margin-top:6px">
@@ -897,15 +996,15 @@ word(){
   <h1 style="margin-top:3px">どんな気持ちで<br>選びましたか？</h1>
   <p class="sub">タップするだけ。<b>文は自動でできます。</b>そのあと自由に直せます。</p>
   <div class="chips">${EMOTIONS.filter(e=>!e.honest).map(e=>`
-    <button class="chip ${d.emotion===e.id?"on":""}" data-a="em" data-id="${e.id}">${e.icon} ${e.label}</button>`).join("")}</div>
-  <button class="btn g" style="font-size:13px;margin-top:10px" data-a="fold">${d.ho?"▴":"▾"} 🤫 本音モード</button>
+    <button class="chip ${d.emotion===e.id?"on":""}" data-a="em" data-id="${e.id}">${icon(e.ic,17)} ${e.label}</button>`).join("")}</div>
+  <button class="btn g" style="font-size:13px;margin-top:10px" data-a="fold">${d.ho?"▴":"▾"} 本音モード</button>
   ${d.ho?`<div class="chips" style="margin-top:2px">${EMOTIONS.filter(e=>e.honest).map(e=>`
-    <button class="chip ${d.emotion===e.id?"on":""}" data-a="em" data-id="${e.id}">${e.icon} ${e.label}</button>`).join("")}</div>
+    <button class="chip ${d.emotion===e.id?"on":""}" data-a="em" data-id="${e.id}">${icon(e.ic,17)} ${e.label}</button>`).join("")}</div>
     <p class="sub" style="font-size:11.5px">※相手に「気持ちの名前」は見せません</p>`:""}
   ${d.emotion?`
   <div class="fld m16"><label class="jlab">相手に届く文（直せます）</label>
     <textarea id="msg" rows="3">${esc(d.message||"")}</textarea></div>
-  <p class="sub" style="font-size:11.5px">💡 AIは代わりに書きません。<b>たたき台を出すだけです。</b></p>
+  <p class="sub" style="font-size:11.5px">AIは代わりに書きません。<b>たたき台を出すだけです。</b></p>
   <button class="btn m16" data-a="toWrap">ラッピングを選ぶ</button>`:""}
   <button class="btn g" data-a="toItems">もどる</button>
 </div>`},
@@ -921,7 +1020,7 @@ wrap(){
   <p class="sub">ギフト専門だからこそ、ここは選べるようにしています。</p>
   <div class="m16">${WRAPS.map(w=>`
     <div class="item ${d.wrapId===w.id?"on":""}" data-a="wr" data-id="${w.id}">
-      <div class="ic">${w.icon}</div>
+      <div class="ic">${icon(w.ic,24,1.5)}</div>
       <div class="m"><div class="nm">${esc(w.name)}</div><div class="pr">${esc(w.note)}</div></div>
       <div style="font-weight:800;font-size:14px;color:${w.price?"var(--ink)":"var(--muted)"}">${w.price?"+"+yen(w.price):"無料"}</div>
     </div>`).join("")}</div>
@@ -948,14 +1047,14 @@ pay(){
   <h1 style="margin-top:3px">内容を確かめてください</h1>
   <div class="card m16">
     <div class="rc"><span>贈る相手</span><b>${esc(f.name)}さん</b></div>
-    <div class="rc"><span>商品</span><b>${g.icon} ${esc(g.name)}</b></div>
+    <div class="rc"><span>商品</span><b>${gicon(g)} ${esc(g.name)}</b></div>
     <div class="rc"><span>ラッピング</span><b>${esc(w.name)}</b></div>
     <div class="rc"><span>メッセージカード</span><b>${d.card?"付ける":"なし"}</b></div>
   </div>
   <p class="jlab m16">お支払い方法</p>
   <div class="m12">${PAYS.map(x=>`
     <div class="item ${ (d.payId||"card")===x.id?"on":""}" data-a="py" data-id="${x.id}">
-      <div class="ic">${x.icon}</div>
+      <div class="ic">${icon(x.ic,24,1.5)}</div>
       <div class="m"><div class="nm">${esc(x.name)}</div><div class="pr">${esc(x.note)}</div></div>
       <div style="color:${(d.payId||"card")===x.id?"var(--accent)":"#DCCFC4"};font-size:18px">${(d.payId||"card")===x.id?"✓":"○"}</div>
     </div>`).join("")}</div>
@@ -966,7 +1065,7 @@ pay(){
     ${fee?`<div class="rc"><span>手数料</span><span>${yen(fee)}</span></div>`:""}
     <div class="rc tot"><span>合計</span><b>${yen(total)}</b></div>
   </div>
-  <p class="sub" style="font-size:11.5px">⚠️ これはプロトタイプです。<b>実際の決済は行われません。</b></p>
+  <p class="sub" style="font-size:11.5px">注意：これはプロトタイプです。<b>実際の決済は行われません。</b></p>
   <button class="btn m12" data-a="order">${yen(total)} を支払って注文する</button>
   <button class="btn g" data-a="toWrap">もどる</button>
 </div>`},
@@ -983,7 +1082,7 @@ ordered(){
 <div class="scr">
   <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
   <div class="card ok" style="text-align:center">
-    <div style="font-size:46px">✅</div>
+    <div style="font-size:46px"></div>
     <h2 style="margin-top:8px">ご注文ありがとうございます</h2>
     <p class="jlab" style="margin-top:9px">注文番号</p>
     <p style="font-size:17px;font-weight:800;letter-spacing:.04em">${esc(o.no)}</p>
@@ -993,8 +1092,8 @@ ordered(){
   <p class="sub"><b style="color:var(--accent)">相手はアプリを入れる必要がありません。</b><br>
   受け取り方（住所に届ける／デジタル）は、<b>相手が選びます。</b></p>
   <div class="url m12">${esc(url)}</div>
-  <button class="btn m12" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
-  <button class="btn o" data-a="openr" data-v="${esc(url)}">▶ 受け取る側の画面を見る（デモ用）</button>
+  <button class="btn m12" data-a="copy" data-v="${esc(url)}">リンクをコピーする</button>
+  <button class="btn o" data-a="openr" data-v="${esc(url)}">▸ 受け取る側の画面を見る（デモ用）</button>
   <button class="btn g" data-a="home">ホームへ</button>
 </div>`},
 
@@ -1005,7 +1104,7 @@ recv(){
 <div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh">
   <div class="hero">
     <p style="font-size:13.5px;opacity:.9">${esc(p.s)}さんから<br>とどいています</p>
-    <div class="big m16">💌</div>
+    <div class="big m16"></div>
     <div class="seal" data-a="open">▸ タップして開く</div>
   </div>
   <p class="sub" style="text-align:center;font-size:12px">※このページはアプリなしで開けます</p>
@@ -1014,7 +1113,7 @@ recv(){
 <div class="scr">
   <div class="hero">
     <p style="font-size:13px;opacity:.88">${esc(p.s)}さんから</p>
-    <div class="big m16">${p.g.icon}</div>
+    <div class="big m16">${icon(CAT(p.g.cat||"sweets").ic,30,1.5)}</div>
     <h2 style="margin-top:12px">${esc(p.g.name)}</h2>
     ${p.w?`<p style="font-size:12px;opacity:.85;margin-top:4px">${esc(p.w)}</p>`:""}
     <div class="quote"><p>「${esc(p.m)}」</p></div>
@@ -1023,7 +1122,7 @@ recv(){
     <p class="jlab">受け取り方をえらんでください</p>
     <div class="m12">${RECVS.map(r=>`
       <div class="item ${S.rpick===r.id?"on":""}" data-a="rm" data-id="${r.id}">
-        <div class="ic">${r.icon}</div>
+        <div class="ic">${icon(r.ic,24,1.5)}</div>
         <div class="m"><div class="nm">${esc(r.name)}</div><div class="pr">${esc(r.note)}</div></div>
         <div style="color:${S.rpick===r.id?"var(--accent)":"#DCCFC4"};font-size:18px">${S.rpick===r.id?"✓":"○"}</div>
       </div>`).join("")}</div>
@@ -1033,12 +1132,12 @@ recv(){
       <p class="jlab">お届け時間帯</p>
       <div class="chips">${SLOTS.map(s=>`<button class="chip ${S.rslot===s?"on":""}" data-a="rs" data-v="${esc(s)}">${esc(s)}</button>`).join("")}</div>
       <div class="card m12" style="background:var(--okbg);border-color:transparent">
-        <p style="font-size:13px;font-weight:700;color:var(--ok)">🔒 入力した住所は、${esc(p.s)}さんには伝わりません</p>
+        <p style="font-size:13px;font-weight:700;color:var(--ok)">入力した住所は、${esc(p.s)}さんには伝わりません</p>
         <p class="sub" style="font-size:11.5px;margin-top:4px">配送に使うだけで、贈った人の画面には出ません</p>
       </div>`:""}
     ${S.rpick==="digi"?`
       <div class="card m12" style="background:var(--okbg);border-color:transparent">
-        <p style="font-size:13px;font-weight:700;color:var(--ok)">📱 住所の入力は要りません</p>
+        <p style="font-size:13px;font-weight:700;color:var(--ok)"> 住所の入力は要りません</p>
         <p class="sub" style="font-size:11.5px;margin-top:4px">受け取り用のコードがこの画面に出ます</p>
       </div>`:""}
     <button class="btn m16" data-a="rconf" ${S.rpick?"":"disabled"}>受け取る</button>
@@ -1048,13 +1147,13 @@ recv(){
   return `
 <div class="scr">
   <div class="card ok" style="text-align:center">
-    <div style="font-size:44px">🎁</div>
+    <div style="font-size:44px"></div>
     <h2 style="margin-top:8px">受け取りました</h2>
     <p class="sub" style="font-size:12.5px">${S.rmethod==="deli"?"ご指定の住所にお届けします":"下のコードを使ってください"}</p>
     ${S.rmethod==="digi"?`<p style="font-size:19px;font-weight:800;letter-spacing:.12em;margin-top:8px">GH-${Math.abs(hashStr(p.no||"x")).toString(36).toUpperCase().slice(0,8)}</p>`:""}
   </div>
   <div class="card hl m24">
-    <p class="jlab">⟳ ひとつだけ教えてください</p>
+    <p class="jlab">ひとつだけ教えてください</p>
     <h2 style="margin-top:8px">もう使いましたか？</h2>
     <p class="sub" style="font-size:12.5px">感想ではなく<b>事実</b>でかまいません。<b>「まだ」も役に立ちます。</b></p>
     <div class="m16">
@@ -1070,7 +1169,7 @@ recv(){
 
 sent(){ return `
 <div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
-  <div style="font-size:56px">💌</div>
+  <div style="font-size:56px"></div>
   <h1 class="m16">返事を送りました</h1>
   <p class="sub">あなたの返事は、<b>贈ってくれた人のノートに残ります。</b><br>
   同じものを2回もらうことも、これで減っていきます。</p>
@@ -1087,7 +1186,7 @@ note(){
   return `
 <div class="scr">
   <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
-  <p class="jlab">📒 2人のノート</p>
+  <p class="jlab">2人のノート</p>
   <h1 style="margin-top:3px">贈ったもの →<br>どうだったか</h1>
   <p class="sub"><b style="color:var(--accent)">写真はありません。記録と、相手の言葉だけです。</b></p>
   <div class="sum">
@@ -1105,7 +1204,7 @@ note(){
         <span class="sub" style="margin:0;margin-left:auto;font-size:11px">${g.sentAt}</span></div>
       ${g.no?`<p class="sub" style="font-size:10.5px;margin-top:4px">注文番号 ${esc(g.no)}${g.total?"／"+yen(g.total):""}</p>`:""}
       <div class="stack" style="gap:8px;margin-top:10px">
-        <div>${e.icon} <b>${e.label}</b> ／ <b>${esc(g.gift.name)}</b>${g.wrap&&g.wrap.price?`<span class="sub" style="font-size:11.5px">（${esc(g.wrap.name)}）</span>`:""}</div>
+        <div>${icon(e.ic,17)} <b>${e.label}</b> ／ <b>${esc(g.gift.name)}</b>${g.wrap&&g.wrap.price?`<span class="sub" style="font-size:11.5px">（${esc(g.wrap.name)}）</span>`:""}</div>
         ${g.receive?`<div class="sub" style="margin:0;font-size:12px">受け取り：${g.receive.method==="deli"?"自宅に配送":"デジタル"}${g.receive.slot&&g.receive.slot!=="指定なし"?"／"+esc(g.receive.slot):""}</div>`:""}
         ${g.reply ? `<div><span class="vd ${USEDC[g.reply.used]}">${USED[g.reply.used]}</span></div>
           ${g.reply.comment?`<p style="font-size:14px">「${esc(g.reply.comment)}」</p>`:""}`
@@ -1136,7 +1235,7 @@ function bar(){
      「相手の趣味を解像度高く解説してくれる機能。
        自分が興味ないものは全く知らないので」
 
-   ■ ⚠️ いまは本物のAIではありません
+   ■ 注意：いまは本物のAIではありません
      下の KB（知識）とキーワード一致で答えています。
      本物のAIにするときは、talkAnswer() の中だけを
      APIの呼び出しに置きかえてください。画面はそのまま使えます。
@@ -1234,15 +1333,15 @@ V.talk = function(){
   return `
 <div class="scr">
   <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
-  <p class="jlab">🤖 ギフトーク AI</p>
+  <p class="jlab">ギフトーク AI</p>
   <h1 style="margin-top:3px">ギフトのことなら<br>何でも聞いてください</h1>
   <p class="sub">商品のことも、相手の趣味のことも、マナーも。<br>
   <b style="color:var(--accent)">「自分が知らないジャンル」こそ聞いてください。</b></p>
   ${log.length ? `<div class="tk">${log.map(m => m.r === "me"
       ? `<div class="who me">あなた</div><div class="bb me">${esc(m.t)}</div>`
       : `<div class="who">ギフトーク AI</div><div class="bb ai">${m.t}</div>
-         ${m.act === "ask" ? `<div class="act"><button data-a="fromTalkAsk">🙆 本人に ◯× で聞いてみる</button></div>` : ""}
-         ${m.act === "note" ? `<div class="act"><button data-a="note">📒 ノートを見る</button></div>` : ""}`
+         ${m.act === "ask" ? `<div class="act"><button data-a="fromTalkAsk">本人に ◯× で聞いてみる</button></div>` : ""}
+         ${m.act === "note" ? `<div class="act"><button data-a="note">ノートを見る</button></div>` : ""}`
     ).join("")}</div>`
   : `<div class="card m16" style="background:var(--grad-soft);border-color:transparent">
       <p class="jlab">こんなことが聞けます</p>
@@ -1255,7 +1354,7 @@ V.talk = function(){
   ${log.length ? `<div class="chips" style="margin-top:14px">${tips.slice(0,3).map(t=>`
     <button class="chip" data-a="tq" data-v="${esc(t)}">${esc(t)}</button>`).join("")}</div>
     <button class="btn g m16" data-a="tclear">会話を消す</button>` : ""}
-  <p class="sub" style="font-size:11px;margin-top:18px">⚠️ これはプロトタイプです。本物のAIにつないでいません。
+  <p class="sub" style="font-size:11px;margin-top:18px">注意：これはプロトタイプです。本物のAIにつないでいません。
   用意した知識から答えています。<b>本物にするときは talkAnswer() だけを差しかえます。</b></p>
 </div>`;
 };
@@ -1320,23 +1419,29 @@ const DQ = [
 ];
 
 const DTYPES = {
-  jitsu:{ icon:"🧺", name:"毎日つかう派", sub:"実用的で、生活の中で出番があるものが好き。",
-    like:["くらし","こもの","のみもの"], avoid:["インテリア"],
+  jitsu:{ ic:"home", name:"毎日つかう派", sub:"実用的で、生活の中で出番があるものが好き。",
+    like:["ホームリビング","タオル・ハンカチ","飲料・お酒"], avoid:["雑貨"],
+    likeId:["home","towel","drink"], avoidId:["goods"],
     tip:"「使い道があるか」で選ぶと喜ばれます。消耗品なら、かぶっても困りません。" },
-  kie:{ icon:"🍫", name:"消えもの派", sub:"残らないほうが気楽。食べ物・飲み物がうれしい。",
-    like:["おかし","たべもの","のみもの"], avoid:["インテリア","こもの"],
+  kie:{ ic:"sweets", name:"消えもの派", sub:"残らないほうが気楽。食べ物・飲み物がうれしい。",
+    like:["スイーツ","グルメ","飲料・お酒"], avoid:["ホームリビング","雑貨"],
+    likeId:["sweets","gourmet","drink"], avoidId:["home","goods"],
     tip:"置き場所に困らせません。日持ちだけ気をつけてください。" },
-  toki:{ icon:"✨", name:"ときめき派", sub:"自分では買わない、少し贅沢なものに弱い。",
-    like:["コスメ","はな","インテリア"], avoid:["くらし"],
+  toki:{ ic:"spark", name:"ときめき派", sub:"自分では買わない、少し贅沢なものに弱い。",
+    like:["フレグランス・コスメ","スイーツ","雑貨"], avoid:["ホームリビング"],
+    likeId:["beauty","sweets","goods"], avoidId:["home"],
     tip:"実用性より「気分が上がるか」。見た目も大事にしてください。" },
-  taiken:{ icon:"🎫", name:"体験派", sub:"モノより思い出。どこかへ行けるものがうれしい。",
-    like:["たいけん"], avoid:["こもの","インテリア"],
+  taiken:{ ic:"exp", name:"体験派", sub:"モノより思い出。どこかへ行けるものがうれしい。",
+    like:["体験"], avoid:["雑貨","ホームリビング"],
+    likeId:["exp"], avoidId:["goods","home"],
     tip:"一緒に行けるものだと、さらに喜ばれます。" },
-  kodawari:{ icon:"🔍", name:"自分で選びたい派", sub:"選ぶ楽しさも含めてギフト。外されるのが少し怖い。",
-    like:["たいけん","のみもの"], avoid:["コスメ","インテリア"],
-    tip:"選べるギフトや、◯×で好みを聞いてから贈るのが安全です。" },
-  teiban:{ icon:"🎀", name:"定番あんしん派", sub:"珍しさより、間違いのない定番がうれしい。",
-    like:["おかし","のみもの","くらし"], avoid:["インテリア"],
+  kodawari:{ ic:"catalog", name:"自分で選びたい派", sub:"選ぶ楽しさも含めてギフト。外されるのが少し怖い。",
+    like:["カタログギフト","体験"], avoid:["フレグランス・コスメ"],
+    likeId:["catalog","exp"], avoidId:["beauty"],
+    tip:"カタログギフトや、◯×で好みを聞いてから贈るのが安全です。" },
+  teiban:{ ic:"towel", name:"定番あんしん派", sub:"珍しさより、間違いのない定番がうれしい。",
+    like:["タオル・ハンカチ","スイーツ","飲料・お酒"], avoid:["雑貨"],
+    likeId:["towel","sweets","drink"], avoidId:["goods"],
     tip:"冒険しないほうが喜ばれます。質のいい定番を。" }
 };
 const DT = id => DTYPES[id] || DTYPES.jitsu;
@@ -1354,13 +1459,13 @@ function diagScore(diag, g){
   if(!diag) return 0;
   const t = DT(diag.type);
   let s = 0;
-  if(t.like.indexOf(g.cat) >= 0) s += 3;
-  if(t.avoid.indexOf(g.cat) >= 0) s -= 4;
+  if((t.likeId||[]).indexOf(g.cat) >= 0) s += 3;
+  if((t.avoidId||[]).indexOf(g.cat) >= 0) s -= 4;
   const sc = diag.sc || {};
-  if(sc.sweet < 0 && g.cat === "おかし") s -= 3;
-  if(sc.arom  < 0 && (g.cat === "リラックス" || g.cat === "コスメ")) s -= 2;
+  if(sc.sweet < 0 && g.cat === "sweets") s -= 3;
+  if(sc.arom  < 0 && g.cat === "beauty") s -= 2;
   if(sc.price < 0 && g.price >= 3000) s -= 2;
-  if(sc.exp   > 0 && g.cat === "たいけん") s += 2;
+  if(sc.exp   > 0 && g.cat === "exp") s += 2;
   return s;
 }
 
@@ -1391,7 +1496,7 @@ V.diagres = function(){
 <div class="scr">
   <p class="jlab">ギフト診断の結果</p>
   <div class="tc m12">
-    <div class="ic">${t.icon}</div>
+    <div class="ic">${icon(t.ic,46,1.3)}</div>
     <div class="nm">${t.name}</div>
     <div class="sb">${esc(t.sub)}</div>
     <div class="bx">
@@ -1408,8 +1513,8 @@ V.diagres = function(){
   <p class="sub">友だちは<b>あなたの好みを知った上で</b>選べます。<br>
   「何がほしい？」と聞かれる気まずさも、なくなります。</p>
   <div class="url m12">${esc(url)}</div>
-  <button class="btn m12" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
-  <button class="btn o" data-a="openr" data-v="${esc(url)}">▶ 友だちに見える画面（デモ用）</button>
+  <button class="btn m12" data-a="copy" data-v="${esc(url)}">リンクをコピーする</button>
+  <button class="btn o" data-a="openr" data-v="${esc(url)}">▸ 友だちに見える画面（デモ用）</button>
   ${S.diag?`<button class="btn g" data-a="home">ホームへ</button>`
           :`<button class="btn s" data-a="dsave">この結果を保存する</button>`}
   <button class="btn g" data-a="dagain">もう一度やる</button>
@@ -1424,7 +1529,7 @@ V.dview = function(){
 <div class="scr">
   <p class="jlab">${esc(c.n)}さんのギフトタイプ</p>
   <div class="tc m12">
-    <div class="ic">${t.icon}</div>
+    <div class="ic">${icon(t.ic,46,1.3)}</div>
     <div class="nm">${t.name}</div>
     <div class="sb">${esc(t.sub)}</div>
     <div class="bx">
@@ -1481,7 +1586,7 @@ V.newplan = function(){
   return `
 <div class="scr">
   <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="backPick">‹ もどる</button>
-  <p class="jlab">📋 ギフト計画</p>
+  <p class="jlab">ギフト計画</p>
   <h1 style="margin-top:3px">${esc(f.name)}さんに、<br>どうなってほしいですか？</h1>
   <p class="sub">先にゴールを決めると、<b>選ぶときに迷わなくなります。</b><br>
   ${b?`${esc(f.name)}さんの誕生日まで <b>あと${b.days}日</b>です。`:"日があるときほど、効きます。"}</p>
@@ -1500,7 +1605,7 @@ V.plan = function(){
   return `
 <div class="scr">
   <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
-  <p class="jlab">📋 ギフト計画</p>
+  <p class="jlab">ギフト計画</p>
   <h1 style="margin-top:3px">${esc(f.name)}さんに<br>「${esc(p.goal)}」</h1>
   <p class="sub">${p.due?`締切 ${esc(p.due)}　／　`:""}${dn} / ${p.steps.length} 完了</p>
   <div class="prog m12"><i style="width:${Math.round(dn/p.steps.length*100)}%;background:#7B5EA7"></i></div>
@@ -1510,7 +1615,7 @@ V.plan = function(){
       <div><div class="tt">${esc(s.t)}</div></div>
     </div>`).join("")}</div>
   ${dn===p.steps.length?`<div class="card ok m16" style="text-align:center">
-    <div style="font-size:40px">🎉</div>
+    <div style="font-size:40px"></div>
     <p style="font-size:15px;font-weight:800;margin-top:6px">計画どおり、やりきりました</p>
   </div>`:""}
   <button class="btn m16" data-a="toItems">贈るものを決める</button>
@@ -1598,7 +1703,7 @@ ${header("ギフトを探す")}
   </div>
   <div class="m16">${list.length ? list.map(g=>`
     <div class="item" data-a="gdetail" data-id="${g.id}">
-      <div class="ic">${g.icon}</div>
+      <div class="ic">${gicon(g)}</div>
       <div class="m"><div class="nm">${esc(g.name)}</div>
         <div class="pr">${yen(g.price)}　<span style="opacity:.75">${esc(g.cat)}${g.keep?`／日持ち ${g.keep}日`:""}${g.cold?"／要冷蔵":""}</span></div></div>
       <div style="color:#DCCFC4;font-size:19px">›</div>
@@ -1614,7 +1719,7 @@ V.gdetail = function(){
 ${header("商品の詳細")}
 <div class="scr" style="padding-top:18px">
   <div style="height:190px;border-radius:22px;background:var(--grad-soft);display:grid;place-items:center;
-              font-size:78px;border:1px solid var(--line)">${g.icon}</div>
+              font-size:78px;border:1px solid var(--line)">${gicon(g)}</div>
   <h1 class="m16" style="font-size:21px">${esc(g.name)}</h1>
   <p style="font-size:24px;font-weight:800;margin-top:4px">${yen(g.price)}</p>
   <div class="card m16">
@@ -1624,11 +1729,11 @@ ${header("商品の詳細")}
     <div class="rc"><span>ラッピング</span><b>選べます</b></div>
   </div>
   ${g.keep && g.keep <= 5 ? `<div class="card m12" style="background:#FCF1E6;border-color:transparent">
-    <p style="font-size:13.5px;font-weight:700;color:#9A6A2E">⚠️ 日持ちが短い商品です</p>
+    <p style="font-size:13.5px;font-weight:700;color:#9A6A2E">注意：日持ちが短い商品です</p>
     <p class="sub" style="font-size:12.5px;margin-top:4px">${g.keep}日なので、<b>会える日に渡すか、受け取り日を決めてから</b>贈るのが向いています。</p>
   </div>` : ""}
   <div class="card m12" style="background:var(--grad-soft);border-color:transparent">
-    <p class="jlab">🤖 ギフトーク AI より</p>
+    <p class="jlab">ギフトーク AI より</p>
     <p style="font-size:14px;line-height:1.8;margin-top:7px">${a.a}</p>
   </div>
   <button class="btn m16" data-a="giveThis">この商品を贈る</button>
