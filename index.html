@@ -390,6 +390,113 @@ function loopSVG(active, size){
 const USED = { u:"使ってる", s:"まだ使ってない", y:"もう無くなった" };
 const USEDC = { u:"u", s:"s", y:"y" };
 
+/* ===== 追加スタイル（ヘッダー・ドロワー・ショップ） ================= */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+  .hd{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;
+      padding:13px 16px;background:rgba(255,252,249,.94);backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--line)}
+  .hd .bg{width:38px;height:38px;flex:0 0 38px;border:0;background:transparent;cursor:pointer;
+          display:grid;place-items:center;gap:4px;padding:0}
+  .hd .bg i{display:block;width:20px;height:2px;background:var(--ink);border-radius:2px}
+  .hd .lg{flex:1;font-size:18px;font-weight:800;letter-spacing:-.02em}
+  .hd .lg span{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hd .rt{width:38px;height:38px;flex:0 0 38px;border:0;background:transparent;font-size:19px;cursor:pointer;position:relative}
+  .hd .rt b{position:absolute;top:4px;right:3px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+  .dw{position:fixed;inset:0;z-index:60;display:none}
+  .dw.on{display:block}
+  .dw .bd{position:absolute;inset:0;background:rgba(31,26,23,.45);animation:fade .2s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .dw .pn{position:absolute;top:0;left:0;bottom:0;width:80%;max-width:310px;background:var(--surface);
+          box-shadow:8px 0 40px rgba(31,26,23,.18);padding:22px 0 20px;overflow-y:auto;
+          animation:slide .26s cubic-bezier(.16,.84,.26,1)}
+  @keyframes slide{from{transform:translateX(-100%)}to{transform:none}}
+  .dw .uh{padding:0 20px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .dw .mi{display:flex;align-items:center;gap:13px;padding:14px 20px;cursor:pointer;font-size:15px;font-weight:700}
+  .dw .mi:active{background:var(--soft)}
+  .dw .mi .e{font-size:19px;width:26px;text-align:center}
+  .dw .sec{padding:16px 20px 6px;font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.12em}
+
+  .mv{border-radius:22px;overflow:hidden;background:var(--grad);color:#fff;padding:26px 20px;
+      position:relative;box-shadow:0 14px 36px rgba(224,97,74,.26)}
+  .mv::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 15%,rgba(255,255,255,.25),transparent 60%)}
+  .mv>*{position:relative}
+  .mv .t{font-size:21px;font-weight:800;line-height:1.45;letter-spacing:-.02em}
+  .mv .s{font-size:13px;opacity:.92;margin-top:7px;line-height:1.7}
+  .mv .b{display:inline-block;margin-top:15px;background:#fff;color:var(--accent);
+         padding:11px 20px;border-radius:999px;font-size:14px;font-weight:800;cursor:pointer}
+
+  .sc{font-size:15px;font-weight:800;margin:26px 0 2px;letter-spacing:-.01em}
+  .sc+.scs{font-size:12px;color:var(--muted);margin-bottom:12px}
+  .gr{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .gr.c2{grid-template-columns:repeat(2,1fr)}
+  .tl2{background:var(--surface);border:1.5px solid var(--line);border-radius:15px;padding:14px 6px 12px;
+       text-align:center;cursor:pointer;font-family:inherit;transition:.15s}
+  .tl2:active{transform:scale(.96)}
+  .tl2 i{font-style:normal;font-size:23px;display:block}
+  .tl2 b{display:block;font-size:12.5px;font-weight:800;margin-top:6px}
+  .tl2 span{display:block;font-size:10px;color:var(--muted);margin-top:1px}
+
+  .hs{display:flex;gap:11px;overflow-x:auto;padding:2px 20px 6px;margin:0 -20px;scrollbar-width:none}
+  .hs::-webkit-scrollbar{display:none}
+  .pc{flex:0 0 136px;cursor:pointer}
+  .pc .im{height:112px;border-radius:15px;background:var(--grad-soft);display:grid;place-items:center;
+          font-size:42px;border:1px solid var(--line)}
+  .pc .nm{font-size:12.5px;font-weight:700;line-height:1.5;margin-top:7px;
+          display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .pc .pr{font-size:13px;font-weight:800;margin-top:2px}
+  .pc .rk{display:inline-block;background:var(--ink);color:#fff;font-size:10px;font-weight:800;
+          padding:2px 7px;border-radius:999px;margin-bottom:5px}
+
+  .sw{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 0;
+      border-bottom:1px solid var(--line)}
+  .sw:last-child{border-bottom:0}
+  .sw .lb{font-size:14.5px;font-weight:700}
+  .sw .ds{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.6}
+  .tg{flex:0 0 52px;width:52px;height:30px;border-radius:999px;background:var(--line);border:0;
+      cursor:pointer;position:relative;transition:.2s}
+  .tg.on{background:var(--ok)}
+  .tg::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+             background:#fff;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.18)}
+  .tg.on::after{left:25px}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ===== ヘッダーとドロワー =========================================== */
+function header(title){
+  const n = S.asks ? S.asks.filter(a => a.done && !a.seen).length : 0;
+  return `<div class="hd">
+    <button class="bg" data-a="menu"><i></i><i></i><i></i></button>
+    <div class="lg">${title ? esc(title) : `<span>${CFG.name}</span>`}</div>
+    <button class="rt" data-a="note">🔔${n?`<b></b>`:""}</button>
+  </div>`;
+}
+function drawer(){
+  if(!S.menu) return "";
+  const me = S.diag;
+  return `<div class="dw on"><div class="bd" data-a="closemenu"></div><div class="pn">
+    <div class="uh">
+      <div class="av" style="background:var(--grad)">${esc((S.user&&S.user.name||"？").slice(0,1))}</div>
+      <div><div style="font-weight:800;font-size:15.5px">${esc(S.user&&S.user.name||"ゲスト")}</div>
+      <div class="sub" style="margin:0;font-size:11.5px">${me&&S.showDiag!==false?DT(me.type).icon+" "+DT(me.type).name:"ギフトタイプ未設定"}</div></div>
+    </div>
+    <div class="sec">ギフトを贈る</div>
+    <div class="mi" data-a="go-friends"><span class="e">🎁</span>だれかに贈る</div>
+    <div class="mi" data-a="go-shop"><span class="e">🛍</span>ギフトを探す</div>
+    <div class="mi" data-a="talk"><span class="e">🤖</span>ギフトーク AI</div>
+    <div class="sec">知る・残す</div>
+    <div class="mi" data-a="diag"><span class="e">🎯</span>ギフト診断</div>
+    <div class="mi" data-a="note"><span class="e">📒</span>2人のノート</div>
+    <div class="sec">設定</div>
+    <div class="mi" data-a="settings"><span class="e">⚙️</span>設定</div>
+    <div class="mi" data-a="logout"><span class="e">↩️</span>ログアウト</div>
+    <p class="sub" style="padding:18px 20px 0;font-size:10.5px">${CFG.name} v${CFG.ver}　プロトタイプ</p>
+  </div></div>`;
+}
+
 /* ===== 画面 ========================================================= */
 const V = {
 
@@ -399,7 +506,7 @@ login(){ return `
   <p class="sub" style="text-align:center">贈る前に、<b style="color:var(--accent)">相手の本音</b>を知る。<br>贈ったあと、<b style="color:var(--accent)">どうだったか</b>が返ってくる。</p>
   ${loopSVG(-1, 224)}
   <div class="stack m24">
-    <div class="fld"><label class="jlab">あなたの名前（ニックネームでOK）</label>
+    <div class="fld"><label class="jlab">ニックネーム</label>
       <input id="nm" data-focus placeholder="たとえば：つばさ" autocomplete="off"></div>
     <button class="btn" data-a="login">はじめる</button>
     <button class="btn g" data-a="demo">見本データで試す（デモ用）</button>
@@ -407,19 +514,85 @@ login(){ return `
   <p class="sub" style="font-size:11px;text-align:center">※プロトタイプです。入力はこの端末の中だけに保存されます。</p>
 </div>`},
 
-/* --- ホーム --- */
+/* --- ★ホーム＝ギフトを探す（ECの形） --- */
 home(){
-  const ago = onThisDay();
-  const newAns = S.asks.filter(a => a.done && !a.seen);
+  const bds = upcomingBirthdays();
+  const newAns = (S.asks||[]).filter(a => a.done && !a.seen);
+  const me = S.diag;
+  const pop = [GIFTS[18], GIFTS[19], GIFTS[0], GIFTS[36], GIFTS[12], GIFTS[39]];
+  const rec = me ? GIFTS.map(g=>({g,s:diagScore({type:me.type,sc:me.sc},g)})).sort((a,b)=>b.s-a.s).slice(0,6).map(x=>x.g) : [];
+  const cats = [["おかし","🍪"],["のみもの","☕"],["コスメ","💄"],["くらし","🧺"],["たいけん","🎫"],["こもの","🎀"]];
+  const scenes = [["誕生日","🎂"],["お礼","🙏"],["お祝い","🎉"],["おつかれ","🌙"],["ごめんね","🫧"],["久しぶり","💭"]];
+  return `
+${header()}
+<div class="scr" style="padding-top:18px">
+  ${bds.length ? `<div class="mv">
+    <div class="t">${esc(bds[0].f.name)}さんの誕生日まで<br>あと ${bds[0].days===0?"0日（今日）":bds[0].days+"日"}</div>
+    <div class="s">早めに決めるほど、選べるものが増えます。<br>日持ちのあるものも、配送のものも間に合います。</div>
+    <span class="b" data-a="pick" data-id="${bds[0].f.id}">ギフトを選ぶ →</span>
+  </div>` : `<div class="mv">
+    <div class="t">贈る前に、相手の本音を。<br>贈ったあと、どうだったかを。</div>
+    <div class="s">◯× で好みを聞いてから選べます。<br>何を贈るつもりかは、相手に分かりません。</div>
+    <span class="b" data-a="go-friends">はじめる →</span>
+  </div>`}
+
+  ${newAns.length ? `<div class="card ok m16" data-a="ans" data-id="${newAns[0].id}" style="cursor:pointer">
+    <p class="jlab" style="color:var(--ok)">✉ 好みの返事がとどいています</p>
+    <p style="font-size:15px;margin-top:5px"><b>${esc(friend(newAns[0].toId).name)}さん</b>が ◯× で答えてくれました →</p></div>` : ""}
+
+  <div class="sc">シーンから探す</div>
+  <div class="scs">贈る理由から選べます</div>
+  <div class="gr">${scenes.map(s=>`
+    <button class="tl2" data-a="go-friends"><i>${s[1]}</i><b>${s[0]}</b></button>`).join("")}</div>
+
+  <div class="sc">価格から探す</div>
+  <div class="scs">相手との関係で、ちょうどいい額が変わります</div>
+  <div class="gr c2">${[["〜1,500円","1",""],["1,500〜2,500円","2",""],["2,500円〜","3",""],["すべて見る","0",""]].map(b=>`
+    <button class="tl2" data-a="shopbud" data-v="${b[1]}"><b>${b[0]}</b></button>`).join("")}</div>
+
+  <div class="sc">カテゴリから探す</div>
+  <div class="scs">全 ${GIFTS.length} 点</div>
+  <div class="gr">${cats.map(c=>`
+    <button class="tl2" data-a="shopcat" data-v="${esc(c[0])}"><i>${c[1]}</i><b>${c[0]}</b>
+      <span>${GIFTS.filter(g=>g.cat===c[0]).length}点</span></button>`).join("")}</div>
+
+  <div class="sc">いま人気のギフト</div>
+  <div class="scs">贈られている数が多い順</div>
+  <div class="hs">${pop.map((g,i)=>`
+    <div class="pc" data-a="gdetail" data-id="${g.id}">
+      <div class="im">${g.icon}</div>
+      <div style="margin-top:7px"><span class="rk">${i+1}位</span></div>
+      <div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div>
+    </div>`).join("")}</div>
+
+  ${me && S.showDiag !== false ? `
+  <div class="sc">${esc(S.user.name)}さんへのおすすめ</div>
+  <div class="scs">${DT(me.type).icon} ${DT(me.type).name} の診断結果から</div>
+  <div class="hs">${rec.map(g=>`
+    <div class="pc" data-a="gdetail" data-id="${g.id}">
+      <div class="im">${g.icon}</div>
+      <div class="nm" style="margin-top:9px">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div>
+    </div>`).join("")}</div>` : `
+  <div class="card hl m24">
+    <p class="jlab">🎯 まだ診断していません</p>
+    <p style="font-size:14.5px;margin-top:6px"><b>8問・1分</b>で、あなたがどんなギフトを喜ぶかが分かります。<br>
+    結果のリンクを配っておけば、<b>友だちはあなたの好みを知った上で選べます。</b></p>
+    <button class="btn" style="margin-top:12px" data-a="diag">ギフト診断をする</button>
+  </div>`}
+
+  <button class="btn m24" data-a="go-friends">🎁 だれかに贈る</button>
+  <button class="btn s" style="margin-top:10px" data-a="talk">🤖 ギフトーク AI に聞く</button>
+</div>`},
+
+/* --- 相手を選ぶ（元のホーム） --- */
+friends(){
   const bds = upcomingBirthdays();
   const plans = (S.plans||[]).filter(p => !p.done);
-  const me = S.diag;
+  const ago = onThisDay();
   return `
-<div class="scr">
-  <p class="jlab">こんにちは、${esc(S.user?S.user.name:"")}さん</p>
-  <h1 style="margin-top:3px">だれに贈りますか？</h1>
-
-  ${bds.length ? `<div class="card hl m16">
+${header("だれに贈る？")}
+<div class="scr" style="padding-top:18px">
+  ${bds.length ? `<div class="card hl">
     <p class="jlab" style="color:var(--accent)">🎂 もうすぐ誕生日</p>
     ${bds.slice(0,2).map(b=>`
       <div class="row" data-a="pick" data-id="${b.f.id}" style="border-bottom:0;padding:11px 0">
@@ -427,14 +600,7 @@ home(){
         <div class="m"><div class="nm">${esc(b.f.name)}さん</div>
           <div class="nt">${b.days===0?"<b>今日です</b>":`あと <b>${b.days}日</b>（${b.md.replace("-","/")}）`}</div></div>
         <div style="color:#DCCFC4;font-size:21px">›</div></div>`).join("")}
-    <p class="sub" style="font-size:11.5px;margin-top:4px">※2週間前にお知らせします。早めに準備すると、選べるものが増えます</p>
   </div>` : ""}
-
-  ${newAns.length ? `<div class="card ok m16" data-a="ans" data-id="${newAns[0].id}" style="cursor:pointer">
-    <p class="jlab" style="color:var(--ok)">✉ 好みの返事がとどいています</p>
-    <p style="font-size:15px;margin-top:5px"><b>${esc(friend(newAns[0].toId).name)}さん</b>が ◯× で答えてくれました</p>
-    <p class="sub" style="margin-top:3px;font-size:12.5px">タップして結果を見る →</p></div>` : ""}
-
   ${plans.length ? `<div class="card m16" style="border-color:rgba(123,94,167,.35)">
     <p class="jlab" style="color:#7B5EA7">📋 進行中のギフト計画</p>
     ${plans.slice(0,2).map(p=>{
@@ -445,55 +611,113 @@ home(){
         <div class="sub" style="margin:0;font-size:11.5px">${dn} / ${p.steps.length} 完了${p.due?`　締切 ${esc(p.due)}`:""}</div>
       </div>`}).join("")}
   </div>` : ""}
-
   <div class="card m16">${S.friends.map(f=>{
     const l = giftsTo(f.id)[0], p = prefsOf(f.id);
     const ny = Object.values(p).filter(v=>v==="y").length;
-    const dg = f.diag ? DT(f.diag).name : null;
-    const nt = dg ? `${dg}　${ny?`／好み ${ny}件`:""}`
+    const dg = f.diag ? DT(f.diag).icon+" "+DT(f.diag).name : null;
+    const nt = dg ? `${dg}${ny?`　／好み ${ny}件`:""}`
             : (l ? `${l.sentAt.slice(5).replace("-","/")}　${esc(l.gift.name)}${l.reply?"　✓返事あり":""}`
                  : (ny ? `好みを ${ny} 件 知っています` : "まだ何も知りません"));
     return `<div class="row" data-a="pick" data-id="${f.id}">
       <div class="av" style="background:${f.color}">${esc(f.name.slice(0,1))}</div>
       <div class="m"><div class="nm">${esc(f.name)}</div><div class="nt">${esc(nt)}</div></div>
       <div style="color:#DCCFC4;font-size:21px">›</div></div>`}).join("")}</div>
-
-  ${me ? `<div class="card m16" style="background:var(--grad-soft);border-color:transparent" data-a="mycard" style2="cursor:pointer">
-    <p class="jlab">🎯 あなたのギフトタイプ</p>
-    <p style="font-size:19px;font-weight:800;margin-top:5px">${DT(me.type).icon} ${DT(me.type).name}</p>
-    <p class="sub" style="margin-top:3px;font-size:12.5px">${esc(DT(me.type).sub)}</p>
-    <button class="btn s" style="margin-top:12px" data-a="mycard">カードを見る・共有する</button>
-  </div>` : `<div class="card hl m16">
-    <p class="jlab">🎯 まだ診断していません</p>
-    <p style="font-size:14.5px;margin-top:6px"><b>8問・1分</b>で、あなたがどんなギフトを喜ぶかが分かります。<br>
-    結果のリンクを配っておけば、<b>友だちはあなたの好みを知った上で選べます。</b></p>
-    <button class="btn" style="margin-top:12px" data-a="diag">ギフト診断をする</button>
-  </div>`}
-
   ${ago.length ? ago.slice(0,1).map(g=>`<div class="ago">
       <p class="y">⟳ ${yearsAgo(g.sentAt)}年前の今日</p>
       <p style="font-size:15px;margin-top:6px"><b>${esc(friend(g.toId).name)}さん</b>に
-        ${EM(g.intent.emotion).icon} <b>${EM(g.intent.emotion).label}</b> の気持ちで<br>
         「${esc(g.gift.name)}」を贈りました。</p>
       ${g.reply&&g.reply.comment?`<p style="font-size:14px;margin-top:9px;padding:11px;background:rgba(255,255,255,.75);border-radius:12px">「${esc(g.reply.comment)}」</p>`:""}
-      <p class="sub" style="font-size:11.5px;margin-top:8px">※写真はありません。<b>記録と、相手の言葉だけで残しています。</b></p>
     </div>`).join("") : ""}
-
-  <button class="btn s m16" data-a="talk">🤖 ギフトーク AI に聞く</button>
-  <button class="btn s" style="margin-top:10px" data-a="note">📒 2人のノートを見る</button>
-  <button class="btn g" data-a="logout">ログアウト</button>
 </div>`},
 
-/* --- 相手を選んだあとの分かれ道 --- */
+/* --- ★設定 --- */
+settings(){
+  const me = S.diag;
+  const sw = (on, a) => `<button class="tg ${on?"on":""}" data-a="${a}"></button>`;
+  return `
+${header("設定")}
+<div class="scr" style="padding-top:18px">
+  <p class="jlab">プロフィール</p>
+  <div class="card m12">
+    <div class="fld"><label class="jlab">ニックネーム</label>
+      <input id="snm" value="${esc(S.user&&S.user.name||"")}" placeholder="つばさ"></div>
+    <div class="fld"><label class="jlab">誕生日（任意）</label>
+      <input id="sbd" value="${esc(S.myBd||"")}" placeholder="例：11/08"></div>
+    <div class="fld" style="margin-bottom:0"><label class="jlab">自分の特徴（任意）</label>
+      <textarea id="sft" rows="3" placeholder="例：甘いものが好き。香りの強いものは苦手。コーヒーをよく飲む。">${esc(S.myNote||"")}</textarea>
+      <p class="sub" style="font-size:11.5px">※診断カードと一緒に、友だちに見せられます</p></div>
+  </div>
+
+  <p class="jlab m24">ギフト診断</p>
+  <div class="card m12">
+    ${me ? `<div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line)">
+      <div style="font-size:30px">${DT(me.type).icon}</div>
+      <div><div style="font-weight:800;font-size:15.5px">${DT(me.type).name}</div>
+      <div class="sub" style="margin:0;font-size:11.5px">${esc(me.at||"")} に診断</div></div>
+    </div>` : `<p class="sub" style="margin:0 0 12px">まだ診断していません</p>`}
+    <div class="sw">
+      <div><div class="lb">診断結果を友だちに見せる</div>
+        <div class="ds">オフにすると、共有リンクを開いても結果が出ません</div></div>
+      ${sw(S.showDiag !== false, "tgDiag")}
+    </div>
+    <div class="sw">
+      <div><div class="lb">ホームにおすすめを出す</div>
+        <div class="ds">診断結果に合う商品を、ホームに表示します</div></div>
+      ${sw(S.showRec !== false, "tgRec")}
+    </div>
+    <button class="btn s" style="margin-top:14px" data-a="${me?"mycard":"diag"}">${me?"診断カードを見る・共有する":"ギフト診断をする"}</button>
+    ${me?`<button class="btn g" data-a="dagain">診断をやり直す</button>`:""}
+  </div>
+
+  <p class="jlab m24">お知らせ</p>
+  <div class="card m12">
+    <div class="sw">
+      <div><div class="lb">誕生日のお知らせ</div>
+        <div class="ds">2週間前にホームでお知らせします</div></div>
+      ${sw(S.ntBd !== false, "tgBd")}
+    </div>
+    <div class="sw">
+      <div><div class="lb">返事がきたらお知らせ</div>
+        <div class="ds">◯× の返事・気持ちの返事が届いたとき</div></div>
+      ${sw(S.ntRe !== false, "tgRe")}
+    </div>
+    <div class="sw">
+      <div><div class="lb">○年前の今日を出す</div>
+        <div class="ds">過去に贈ったものを、同じ日に思い出します</div></div>
+      ${sw(S.ntAgo !== false, "tgAgo")}
+    </div>
+  </div>
+
+  <p class="jlab m24">表示</p>
+  <div class="card m12">
+    <div class="sw">
+      <div><div class="lb">本音モードを出す</div>
+        <div class="ds">「正直、義理」「自分のため」などを選べるようにします</div></div>
+      ${sw(S.showHonest !== false, "tgHon")}
+    </div>
+  </div>
+
+  <p class="jlab m24">データ</p>
+  <div class="card m12">
+    <p class="sub" style="margin:0">このアプリのデータは、<b>この端末の中だけ</b>に保存されています。
+    どこにも送信していません。</p>
+    <button class="btn g" style="margin-top:10px;color:var(--accent)" data-a="wipe">保存したデータを全部消す</button>
+  </div>
+
+  <button class="btn m24" data-a="savecfg">保存する</button>
+  <p class="sub" style="font-size:11px;text-align:center">${CFG.name} v${CFG.ver}　プロトタイプ</p>
+</div>`},
+
+/* --- 相手を選んだあと --- */
 pick(){
   const f = friend(S.draft.toId), p = prefsOf(f.id);
   const ny = Object.values(p).filter(v=>v==="y").length;
   const nn = Object.values(p).filter(v=>v==="n").length;
   const d = f.diag ? DT(f.diag) : null;
   return `
-<div class="scr">
-  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
-  <div style="display:flex;align-items:center;gap:13px;margin-top:4px">
+${header(f.name + "さんに贈る")}
+<div class="scr" style="padding-top:18px">
+  <div style="display:flex;align-items:center;gap:13px">
     <div class="av" style="background:${f.color};width:52px;height:52px;flex:0 0 52px;font-size:19px">${esc(f.name.slice(0,1))}</div>
     <div><h1 style="font-size:21px">${esc(f.name)}さん</h1>
     <p class="sub" style="margin:0;font-size:12.5px">${esc(f.rel||"")}${f.bd?`　🎂 ${f.bd.replace("-","/")}`:""}</p></div>
@@ -504,7 +728,6 @@ pick(){
     <p style="font-size:13.5px;margin-top:5px">${esc(d.sub)}</p>
     <div class="map">${d.like.map(c=>`<span class="tag">◯ ${esc(c)}</span>`).join("")}
       ${d.avoid.map(c=>`<span class="tag x">${esc(c)}</span>`).join("")}</div>
-    <p class="sub" style="font-size:11.5px;margin-top:8px">※本人が診断で答えた結果です</p>
   </div>` : ""}
   ${ny||nn ? `<div class="card m16">
     <p class="jlab">◯× で分かっている好み</p>
@@ -513,30 +736,17 @@ pick(){
       ${Object.keys(p).filter(k=>p[k]==="n").map(k=>`<span class="tag x">${esc(GI(k)?GI(k).cat:"")}</span>`).join("")}
     </div></div>` : ""}
   <div class="m16">
-    <div class="pick main" data-a="toItems">
-      <span class="em">🎁</span>
-      <div><b>そのまま贈る</b>
-      <span>${d?"診断結果に合わせて候補を出します":(ny?`◯がついた ${ny} 件を優先します`:"候補を3つ出します")}</span></div>
-    </div>
-    <div class="pick" data-a="toAsk">
-      <span class="em">🙆</span>
-      <div><b>好みを聞く</b>
-      <span>候補を ◯× で選んでもらう。<br><b>何を贈るつもりかは、相手に分かりません</b></span></div>
-    </div>
-    <div class="pick" data-a="newplan">
-      <span class="em">📋</span>
-      <div><b>ギフト計画を立てる</b>
-      <span>先にゴールを決めて、やることを順番に。<br>誕生日まで日があるときに</span></div>
-    </div>
-    <div class="pick" data-a="talk">
-      <span class="em">🤖</span>
-      <div><b>AIに相談する</b>
-      <span>相手の趣味を自分が知らないときに</span></div>
-    </div>
+    <div class="pick main" data-a="toItems"><span class="em">🎁</span>
+      <div><b>そのまま贈る</b><span>${d?"診断結果に合わせて候補を出します":(ny?`◯がついた ${ny} 件を優先します`:"候補を3つ出します")}</span></div></div>
+    <div class="pick" data-a="toAsk"><span class="em">🙆</span>
+      <div><b>好みを聞く</b><span>候補を ◯× で選んでもらう。<br><b>何を贈るつもりかは、相手に分かりません</b></span></div></div>
+    <div class="pick" data-a="newplan"><span class="em">📋</span>
+      <div><b>ギフト計画を立てる</b><span>先にゴールを決めて、やることを順番に</span></div></div>
+    <div class="pick" data-a="talk"><span class="em">🤖</span>
+      <div><b>AIに相談する</b><span>相手の趣味を自分が知らないときに</span></div></div>
   </div>
 </div>`},
 
-/* --- 好み聞きを作る --- */
 ask(){
   const d = S.draft, f = friend(d.toId);
   const sel = d.askItems || [];
@@ -544,10 +754,9 @@ ask(){
   const pool = GIFTS.filter(g => p[g.id] === undefined);
   const list = (pool.length >= 6 ? pool : GIFTS);
   return `
-<div class="scr">
-  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="backPick">‹ もどる</button>
-  <p class="jlab">好みを聞く</p>
-  <h1 style="margin-top:3px">候補を選んでください</h1>
+${header("好みを聞く")}
+<div class="scr" style="padding-top:18px">
+  <h1>候補を選んでください</h1>
   <p class="sub">選んだものを <b>${esc(f.name)}さん</b>が ◯× で答えます。<br>
   <b style="color:var(--accent)">この中から贈るとは伝わりません。</b></p>
   <p class="jlab m16">${sel.length} 件えらび中（4〜8件がおすすめ）</p>
@@ -558,6 +767,7 @@ ask(){
       <div style="color:${sel.includes(g.id)?"var(--accent)":"#DCCFC4"};font-size:18px">${sel.includes(g.id)?"✓":"○"}</div>
     </div>`).join("")}</div>
   <button class="btn m16" data-a="mkAsk" ${sel.length>=3?"":"disabled"}>この ${sel.length} 件で聞く</button>
+  <button class="btn g" data-a="backPick">もどる</button>
 </div>`},
 
 asklink(){
@@ -565,9 +775,9 @@ asklink(){
   const f = friend(a.toId);
   const url = location.origin + location.pathname + "?p=" + pack({ id:a.id, s:S.user.name, items:a.items });
   return `
-<div class="scr">
-  <p class="jlab">好みを聞く</p>
-  <h1 style="margin-top:3px">このリンクを送ってください</h1>
+${header("好みを聞く")}
+<div class="scr" style="padding-top:18px">
+  <h1>このリンクを送ってください</h1>
   <p class="sub"><b>${esc(f.name)}さん</b>は、${a.items.length}件に ◯× を押すだけ。<b>30秒で終わります。</b></p>
   <div class="card m16" style="background:#FAF6F2;border-color:transparent">
     <p class="jlab">相手に見える文</p>
@@ -621,9 +831,9 @@ ansview(){
   const ms = a.items.filter(i => a.answers[i] === "m");
   const ns = a.items.filter(i => a.answers[i] === "n");
   return `
-<div class="scr">
-  <p class="jlab">✉ ${esc(f.name)}さんの返事</p>
-  <h1 style="margin-top:3px">本音が返ってきました</h1>
+${header("返事がとどきました")}
+<div class="scr" style="padding-top:18px">
+  <h1>${esc(f.name)}さんの本音</h1>
   <div class="sum">
     <div><b style="color:var(--ok)">${ys.length}</b><span>◯ 好き</span></div>
     <div><b>${ms.length}</b><span>△ どちらでも</span></div>
@@ -1341,52 +1551,103 @@ KB.push(
 
 /* ==================================================================
    候補の出し方を上書き（診断結果を反映する版）
-   いままで：◯×で聞いた結果だけを見ていた
-   これから：①相手の診断結果 ②◯×の答え ③かぶり の3つで並べ替える
+   ①相手の診断結果 ②◯×の答え ③かぶり の3つで並べ替えます
    ================================================================== */
 suggest = function(fid, n, budget){
   const f  = friend(fid);
   const pr = prefsOf(fid);
   const dg = f.diag ? { type:f.diag, sc:(f.diagSc || {}) } : null;
-
   let pool = GIFTS.filter(g => pr[g.id] !== "n");
   if(budget) pool = pool.filter(g => g.price >= budget[0] && g.price <= budget[1]);
   if(!pool.length) pool = GIFTS.slice();
-
   const scored = pool.map(g => {
     let s = 0;
-    if(pr[g.id] === "y") s += 6;          /* 本人が◯をつけた＝最優先 */
+    if(pr[g.id] === "y") s += 6;
     else if(pr[g.id] === "m") s += 1;
-    s += diagScore(dg, g);                 /* 診断のタイプに合うか */
-    if(alreadySent(fid, g.id)) s -= 5;     /* かぶりは後ろへ */
+    s += diagScore(dg, g);
+    if(alreadySent(fid, g.id)) s -= 5;
     return { g, s };
   }).sort((a,b) => b.s - a.s);
-
-  /* 「ほかの3つを見る」用：上位から順にずらして出す */
   const seed = (S.draft && S.draft.seed) ? S.draft.seed : 0;
   const top  = scored.slice(0, Math.max(9, (n||3) * 3));
   const off  = (seed * (n||3)) % Math.max(1, top.length);
-  const out  = top.slice(off).concat(top.slice(0, off));
-  return out.slice(0, n || 3).map(x => x.g);
+  return top.slice(off).concat(top.slice(0, off)).slice(0, n || 3).map(x => x.g);
 };
 
-/* AIの「診断する」ボタンを有効にする */
-(function(){
-  const base = talkAnswer;
-  talkAnswer = function(q){
-    const r = base(q);
-    if(r && r.act === "diag") return r;
-    return r;
-  };
-})();
+/* ===== 商品一覧（カテゴリ・価格でしぼる） =========================== */
+V.shop = function(){
+  const cat = S.shopCat || null;
+  const bi  = S.shopBud || 0;
+  const b   = BUDGETS[bi][1];
+  let list = GIFTS.slice();
+  if(cat) list = list.filter(g => g.cat === cat);
+  if(b)   list = list.filter(g => g.price >= b[0] && g.price <= b[1]);
+  list.sort((a,b2) => a.price - b2.price);
+  const cats = Array.from(new Set(GIFTS.map(g => g.cat)));
+  return `
+${header("ギフトを探す")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">${cat ? esc(cat) : "すべてのギフト"}<span class="sub" style="display:inline;font-size:13px"> ${list.length}点</span></h1>
+  <p class="jlab m16">価格</p>
+  <div class="chips">${BUDGETS.map((x,i)=>`
+    <button class="chip ${bi===i?"on":""}" data-a="shopbud" data-v="${i}">${x[0]}</button>`).join("")}</div>
+  <p class="jlab m16">カテゴリ</p>
+  <div class="chips">
+    <button class="chip ${!cat?"on":""}" data-a="shopcat" data-v="">すべて</button>
+    ${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-a="shopcat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}
+  </div>
+  <div class="m16">${list.length ? list.map(g=>`
+    <div class="item" data-a="gdetail" data-id="${g.id}">
+      <div class="ic">${g.icon}</div>
+      <div class="m"><div class="nm">${esc(g.name)}</div>
+        <div class="pr">${yen(g.price)}　<span style="opacity:.75">${esc(g.cat)}${g.keep?`／日持ち ${g.keep}日`:""}${g.cold?"／要冷蔵":""}</span></div></div>
+      <div style="color:#DCCFC4;font-size:19px">›</div>
+    </div>`).join("") : `<div class="note">条件に合う商品がありません</div>`}</div>
+</div>`;
+};
 
-/* 診断カードのボタンを押せるように（V.talk の act に diag を足す） */
+/* ===== 商品の詳細 =================================================== */
+V.gdetail = function(){
+  const g = GI(S.shopGift); if(!g) return V.shop();
+  const a = talkAnswer(g.cat);
+  return `
+${header("商品の詳細")}
+<div class="scr" style="padding-top:18px">
+  <div style="height:190px;border-radius:22px;background:var(--grad-soft);display:grid;place-items:center;
+              font-size:78px;border:1px solid var(--line)">${g.icon}</div>
+  <h1 class="m16" style="font-size:21px">${esc(g.name)}</h1>
+  <p style="font-size:24px;font-weight:800;margin-top:4px">${yen(g.price)}</p>
+  <div class="card m16">
+    <div class="rc"><span>カテゴリ</span><b>${esc(g.cat)}</b></div>
+    <div class="rc"><span>日持ち</span><b>${g.keep ? g.keep + "日" : "なし（食品以外）"}</b></div>
+    <div class="rc"><span>保管</span><b>${g.cold ? "要冷蔵" : "常温"}</b></div>
+    <div class="rc"><span>ラッピング</span><b>選べます</b></div>
+  </div>
+  ${g.keep && g.keep <= 5 ? `<div class="card m12" style="background:#FCF1E6;border-color:transparent">
+    <p style="font-size:13.5px;font-weight:700;color:#9A6A2E">⚠️ 日持ちが短い商品です</p>
+    <p class="sub" style="font-size:12.5px;margin-top:4px">${g.keep}日なので、<b>会える日に渡すか、受け取り日を決めてから</b>贈るのが向いています。</p>
+  </div>` : ""}
+  <div class="card m12" style="background:var(--grad-soft);border-color:transparent">
+    <p class="jlab">🤖 ギフトーク AI より</p>
+    <p style="font-size:14px;line-height:1.8;margin-top:7px">${a.a}</p>
+  </div>
+  <button class="btn m16" data-a="giveThis">この商品を贈る</button>
+  <button class="btn g" data-a="go-shop">一覧にもどる</button>
+</div>`;
+};
+
+/* ===== 画面を描く処理を上書き（ドロワーを重ねる） =================== */
+draw = function(){
+  document.getElementById("app").innerHTML = (V[cur] ? V[cur]() : V.home()) + bar() + drawer();
+  document.querySelectorAll("[data-a]").forEach(el =>
+    el.addEventListener("click", (ev) => { ev.stopPropagation(); act(el.dataset); }));
+  const f = document.querySelector("[data-focus]"); if(f) f.focus();
+};
+
+/* 本音モードの表示／非表示を設定に従わせる */
 (function(){
-  const base = V.talk;
-  V.talk = function(){
-    return base().replace(/data-a="fromTalkAsk">🙆 本人に ◯× で聞いてみる<\/button>/g,
-      'data-a="fromTalkAsk">🙆 本人に ◯× で聞いてみる</button><button data-a="fromTalkDiag">🎯 ギフト診断をする</button>');
-  };
+  const baseEM = EMOTIONS.slice();
+  Object.defineProperty(window, "HONEST_ON", { get(){ return S.showHonest !== false; } });
 })();
 
 /* 追加スタイル（購入フロー用） */
@@ -1411,17 +1672,47 @@ function act(d){
     case "login": {
       const n=(document.getElementById("nm").value||"").trim();
       if(!n){ alert("名前を入れてください"); return; }
-      S=seed(n); save(); go("diag"); break;    /* ★本物の認証はこの行を差しかえ／登録後すぐ診断へ */
+      S=seed(n); S.showDiag=true; save(); go("diag"); break;    /* ★本物の認証はこの行を差しかえ／登録後すぐ診断へ */
     }
     case "demo":   S=seed("つばさ"); save(); go("home"); break;
-    case "logout": S.session.in=false; save(); go("login"); break;
+    case "logout": S.menu=false; S.session.in=false; save(); go("login"); break;
     case "home":   S.draft=null; S.planId=null; save(); go("home"); break;
-    case "note":   go("note"); break;
+    case "note":   S.menu=false; save(); go("note"); break;
     case "jump":   go(d.v); break;
-    case "wipe":   if(confirm("保存したデータを消して最初からにしますか？")) wipe(); break;
+    case "wipe":   S.menu=false; if(confirm("保存したデータを消して最初からにしますか？")) wipe(); else draw(); break;
+
+
+    /* ===== メニュー・画面移動 ===== */
+    case "menu":      S.menu = true;  save(); draw(); break;
+    case "closemenu": S.menu = false; save(); draw(); break;
+    case "go-friends": S.menu=false; S.draft=null; save(); go("friends"); break;
+    case "go-shop":    S.menu=false; S.shopGift=null; save(); go("shop"); break;
+    case "settings":   S.menu=false; save(); go("settings"); break;
+
+    /* ===== ショップ ===== */
+    case "shopbud": S.shopBud = Number(d.v); S.menu=false; save(); go("shop"); break;
+    case "shopcat": S.shopCat = d.v || null;  S.menu=false; save(); go("shop"); break;
+    case "gdetail": S.shopGift = d.id; save(); go("gdetail"); break;
+    case "giveThis": S.giveGift = S.shopGift; save(); go("friends"); break;
+
+    /* ===== 設定 ===== */
+    case "tgDiag": S.showDiag   = (S.showDiag===false);   save(); go("settings"); break;
+    case "tgRec":  S.showRec    = (S.showRec===false);    save(); go("settings"); break;
+    case "tgBd":   S.ntBd       = (S.ntBd===false);       save(); go("settings"); break;
+    case "tgRe":   S.ntRe       = (S.ntRe===false);       save(); go("settings"); break;
+    case "tgAgo":  S.ntAgo      = (S.ntAgo===false);      save(); go("settings"); break;
+    case "tgHon":  S.showHonest = (S.showHonest===false); save(); go("settings"); break;
+    case "savecfg": {
+      const n = (document.getElementById("snm")||{}).value || "";
+      const b = (document.getElementById("sbd")||{}).value || "";
+      const f = (document.getElementById("sft")||{}).value || "";
+      if(n.trim()) S.user.name = n.trim();
+      S.myBd = b.trim(); S.myNote = f.trim();
+      save(); alert("保存しました"); go("home"); break;
+    }
 
     /* ===== ギフト診断 ===== */
-    case "diag": S.dq = 0; S.dsc = { keep:0, self:0, use:0, new:0, sweet:0, arom:0, price:0, exp:0 };
+    case "diag": S.menu=false; S.dq = 0; S.dsc = { keep:0, self:0, use:0, new:0, sweet:0, arom:0, price:0, exp:0 };
                  S.diagTmp = null; save(); go("diag"); break;
     case "dq": {
       const key = d.v.slice(0, -1), sign = d.v.slice(-1) === "+" ? 1 : -1;
@@ -1478,9 +1769,14 @@ function act(d){
     }
 
     /* ===== 相手を選ぶ ===== */
-    case "pick": S.draft={ toId:d.id, askItems:[], giftId:null, emotion:null, message:"",
-                           ho:false, budget:0, wrapId:null, card:true, payId:"card" };
-                 save(); go("pick"); break;
+    case "pick": {
+      S.menu = false;
+      S.draft = { toId:d.id, askItems:[], giftId:S.giveGift||null, emotion:null, message:"",
+                  ho:false, budget:0, wrapId:null, card:true, payId:"card" };
+      if(S.giveGift){ S.giveGift = null; save(); go("word"); }
+      else { save(); go("pick"); }
+      break;
+    }
     case "backPick": go("pick"); break;
 
     /* 好みを聞く */
@@ -1511,7 +1807,7 @@ function act(d){
     case "gpick": D.giftId = d.id; save(); go("word"); break;
 
     /* AI */
-    case "talk": go("talk"); break;
+    case "talk": S.menu=false; save(); go("talk"); break;
     case "tq":   talkSend(d.v); break;
     case "tsend": {
       const el = document.getElementById("tq");
