@@ -397,7 +397,7 @@ login(){ return `
 <div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;padding-bottom:40px">
   <h1 style="text-align:center">${CFG.name}<span class="sub" style="display:inline;font-size:12px"> （仮）</span></h1>
   <p class="sub" style="text-align:center">贈る前に、<b style="color:var(--accent)">相手の本音</b>を知る。<br>贈ったあと、<b style="color:var(--accent)">どうだったか</b>が返ってくる。</p>
-  ${loopSVG(-1, 228)}
+  ${loopSVG(-1, 224)}
   <div class="stack m24">
     <div class="fld"><label class="jlab">あなたの名前（ニックネームでOK）</label>
       <input id="nm" data-focus placeholder="たとえば：つばさ" autocomplete="off"></div>
@@ -411,23 +411,65 @@ login(){ return `
 home(){
   const ago = onThisDay();
   const newAns = S.asks.filter(a => a.done && !a.seen);
+  const bds = upcomingBirthdays();
+  const plans = (S.plans||[]).filter(p => !p.done);
+  const me = S.diag;
   return `
 <div class="scr">
   <p class="jlab">こんにちは、${esc(S.user?S.user.name:"")}さん</p>
   <h1 style="margin-top:3px">だれに贈りますか？</h1>
+
+  ${bds.length ? `<div class="card hl m16">
+    <p class="jlab" style="color:var(--accent)">🎂 もうすぐ誕生日</p>
+    ${bds.slice(0,2).map(b=>`
+      <div class="row" data-a="pick" data-id="${b.f.id}" style="border-bottom:0;padding:11px 0">
+        <div class="av" style="background:${b.f.color}">${esc(b.f.name.slice(0,1))}</div>
+        <div class="m"><div class="nm">${esc(b.f.name)}さん</div>
+          <div class="nt">${b.days===0?"<b>今日です</b>":`あと <b>${b.days}日</b>（${b.md.replace("-","/")}）`}</div></div>
+        <div style="color:#DCCFC4;font-size:21px">›</div></div>`).join("")}
+    <p class="sub" style="font-size:11.5px;margin-top:4px">※2週間前にお知らせします。早めに準備すると、選べるものが増えます</p>
+  </div>` : ""}
+
   ${newAns.length ? `<div class="card ok m16" data-a="ans" data-id="${newAns[0].id}" style="cursor:pointer">
     <p class="jlab" style="color:var(--ok)">✉ 好みの返事がとどいています</p>
     <p style="font-size:15px;margin-top:5px"><b>${esc(friend(newAns[0].toId).name)}さん</b>が ◯× で答えてくれました</p>
     <p class="sub" style="margin-top:3px;font-size:12.5px">タップして結果を見る →</p></div>` : ""}
+
+  ${plans.length ? `<div class="card m16" style="border-color:rgba(123,94,167,.35)">
+    <p class="jlab" style="color:#7B5EA7">📋 進行中のギフト計画</p>
+    ${plans.slice(0,2).map(p=>{
+      const dn = p.steps.filter(s=>s.ok).length;
+      return `<div data-a="plan" data-id="${p.id}" style="cursor:pointer;margin-top:9px">
+        <div style="font-size:15px;font-weight:700">${esc(friend(p.toId).name)}さんへ ／ ${esc(p.goal)}</div>
+        <div class="prog" style="margin:7px 0 4px"><i style="width:${Math.round(dn/p.steps.length*100)}%;background:#7B5EA7"></i></div>
+        <div class="sub" style="margin:0;font-size:11.5px">${dn} / ${p.steps.length} 完了${p.due?`　締切 ${esc(p.due)}`:""}</div>
+      </div>`}).join("")}
+  </div>` : ""}
+
   <div class="card m16">${S.friends.map(f=>{
     const l = giftsTo(f.id)[0], p = prefsOf(f.id);
     const ny = Object.values(p).filter(v=>v==="y").length;
-    const nt = l ? `${l.sentAt.slice(5).replace("-","/")}　${esc(l.gift.name)}${l.reply?"　✓返事あり":""}`
-                 : (ny ? `好みを ${ny} 件 知っています` : "まだ何も知りません");
+    const dg = f.diag ? DT(f.diag).name : null;
+    const nt = dg ? `${dg}　${ny?`／好み ${ny}件`:""}`
+            : (l ? `${l.sentAt.slice(5).replace("-","/")}　${esc(l.gift.name)}${l.reply?"　✓返事あり":""}`
+                 : (ny ? `好みを ${ny} 件 知っています` : "まだ何も知りません"));
     return `<div class="row" data-a="pick" data-id="${f.id}">
       <div class="av" style="background:${f.color}">${esc(f.name.slice(0,1))}</div>
-      <div class="m"><div class="nm">${esc(f.name)}</div><div class="nt">${nt}</div></div>
+      <div class="m"><div class="nm">${esc(f.name)}</div><div class="nt">${esc(nt)}</div></div>
       <div style="color:#DCCFC4;font-size:21px">›</div></div>`}).join("")}</div>
+
+  ${me ? `<div class="card m16" style="background:var(--grad-soft);border-color:transparent" data-a="mycard" style2="cursor:pointer">
+    <p class="jlab">🎯 あなたのギフトタイプ</p>
+    <p style="font-size:19px;font-weight:800;margin-top:5px">${DT(me.type).icon} ${DT(me.type).name}</p>
+    <p class="sub" style="margin-top:3px;font-size:12.5px">${esc(DT(me.type).sub)}</p>
+    <button class="btn s" style="margin-top:12px" data-a="mycard">カードを見る・共有する</button>
+  </div>` : `<div class="card hl m16">
+    <p class="jlab">🎯 まだ診断していません</p>
+    <p style="font-size:14.5px;margin-top:6px"><b>8問・1分</b>で、あなたがどんなギフトを喜ぶかが分かります。<br>
+    結果のリンクを配っておけば、<b>友だちはあなたの好みを知った上で選べます。</b></p>
+    <button class="btn" style="margin-top:12px" data-a="diag">ギフト診断をする</button>
+  </div>`}
+
   ${ago.length ? ago.slice(0,1).map(g=>`<div class="ago">
       <p class="y">⟳ ${yearsAgo(g.sentAt)}年前の今日</p>
       <p style="font-size:15px;margin-top:6px"><b>${esc(friend(g.toId).name)}さん</b>に
@@ -436,6 +478,7 @@ home(){
       ${g.reply&&g.reply.comment?`<p style="font-size:14px;margin-top:9px;padding:11px;background:rgba(255,255,255,.75);border-radius:12px">「${esc(g.reply.comment)}」</p>`:""}
       <p class="sub" style="font-size:11.5px;margin-top:8px">※写真はありません。<b>記録と、相手の言葉だけで残しています。</b></p>
     </div>`).join("") : ""}
+
   <button class="btn s m16" data-a="talk">🤖 ギフトーク AI に聞く</button>
   <button class="btn s" style="margin-top:10px" data-a="note">📒 2人のノートを見る</button>
   <button class="btn g" data-a="logout">ログアウト</button>
@@ -446,42 +489,54 @@ pick(){
   const f = friend(S.draft.toId), p = prefsOf(f.id);
   const ny = Object.values(p).filter(v=>v==="y").length;
   const nn = Object.values(p).filter(v=>v==="n").length;
+  const d = f.diag ? DT(f.diag) : null;
   return `
 <div class="scr">
   <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
   <div style="display:flex;align-items:center;gap:13px;margin-top:4px">
     <div class="av" style="background:${f.color};width:52px;height:52px;flex:0 0 52px;font-size:19px">${esc(f.name.slice(0,1))}</div>
     <div><h1 style="font-size:21px">${esc(f.name)}さん</h1>
-    <p class="sub" style="margin:0;font-size:12.5px">${esc(f.rel||"")}</p></div>
+    <p class="sub" style="margin:0;font-size:12.5px">${esc(f.rel||"")}${f.bd?`　🎂 ${f.bd.replace("-","/")}`:""}</p></div>
   </div>
+  ${d ? `<div class="card m16" style="background:var(--grad-soft);border-color:transparent">
+    <p class="jlab">🎯 ${esc(f.name)}さんのギフトタイプ</p>
+    <p style="font-size:18px;font-weight:800;margin-top:4px">${d.icon} ${d.name}</p>
+    <p style="font-size:13.5px;margin-top:5px">${esc(d.sub)}</p>
+    <div class="map">${d.like.map(c=>`<span class="tag">◯ ${esc(c)}</span>`).join("")}
+      ${d.avoid.map(c=>`<span class="tag x">${esc(c)}</span>`).join("")}</div>
+    <p class="sub" style="font-size:11.5px;margin-top:8px">※本人が診断で答えた結果です</p>
+  </div>` : ""}
   ${ny||nn ? `<div class="card m16">
-    <p class="jlab">わかっている好み</p>
+    <p class="jlab">◯× で分かっている好み</p>
     <div class="map">
       ${Object.keys(p).filter(k=>p[k]==="y").map(k=>`<span class="tag">◯ ${esc(GI(k)?GI(k).cat:"")}</span>`).join("")}
       ${Object.keys(p).filter(k=>p[k]==="n").map(k=>`<span class="tag x">${esc(GI(k)?GI(k).cat:"")}</span>`).join("")}
     </div></div>` : ""}
   <div class="m16">
-    <div class="pick main" data-a="toAsk">
-      <span class="em">🙆</span>
-      <div><b>まず、好みを聞く</b>
-      <span>候補を ◯× で選んでもらう。<br><b>何を贈るつもりかは、相手に分かりません</b></span></div>
-    </div>
-    <div class="pick" data-a="toItems">
+    <div class="pick main" data-a="toItems">
       <span class="em">🎁</span>
       <div><b>そのまま贈る</b>
-      <span>${ny?`◯がついた ${ny} 件を優先して候補を出します`:"候補を3つ出します"}</span></div>
+      <span>${d?"診断結果に合わせて候補を出します":(ny?`◯がついた ${ny} 件を優先します`:"候補を3つ出します")}</span></div>
+    </div>
+    <div class="pick" data-a="toAsk">
+      <span class="em">🙆</span>
+      <div><b>好みを聞く</b>
+      <span>候補を ◯× で選んでもらう。<br><b>何を贈るつもりかは、相手に分かりません</b></span></div>
+    </div>
+    <div class="pick" data-a="newplan">
+      <span class="em">📋</span>
+      <div><b>ギフト計画を立てる</b>
+      <span>先にゴールを決めて、やることを順番に。<br>誕生日まで日があるときに</span></div>
     </div>
     <div class="pick" data-a="talk">
       <span class="em">🤖</span>
       <div><b>AIに相談する</b>
-      <span>相手の趣味を自分が知らないときに。<br>ジャンルの解説も、マナーも聞けます</span></div>
+      <span>相手の趣味を自分が知らないときに</span></div>
     </div>
   </div>
-  <p class="sub" style="font-size:12px">💡 アンケートで、<b>29人中0人しか「好みじゃなかった」と正直に言いませんでした。</b>
-  贈る前なら、まだ誰も傷つかないので、本音が言えます。</p>
 </div>`},
 
-/* --- ★好み聞きを作る（贈る人） --- */
+/* --- 好み聞きを作る --- */
 ask(){
   const d = S.draft, f = friend(d.toId);
   const sel = d.askItems || [];
@@ -494,7 +549,7 @@ ask(){
   <p class="jlab">好みを聞く</p>
   <h1 style="margin-top:3px">候補を選んでください</h1>
   <p class="sub">選んだものを <b>${esc(f.name)}さん</b>が ◯× で答えます。<br>
-  <b style="color:var(--accent)">この中から贈るとは伝わりません。</b>「好みを教えて」とだけ届きます。</p>
+  <b style="color:var(--accent)">この中から贈るとは伝わりません。</b></p>
   <p class="jlab m16">${sel.length} 件えらび中（4〜8件がおすすめ）</p>
   <div class="m12">${list.slice(0,10).map(g=>`
     <div class="item ${sel.includes(g.id)?"on":""}" data-a="selA" data-id="${g.id}">
@@ -505,7 +560,6 @@ ask(){
   <button class="btn m16" data-a="mkAsk" ${sel.length>=3?"":"disabled"}>この ${sel.length} 件で聞く</button>
 </div>`},
 
-/* --- 好み聞きのURLができた --- */
 asklink(){
   const a = S.asks.find(x => x.id === S.draft.askId);
   const f = friend(a.toId);
@@ -517,18 +571,15 @@ asklink(){
   <p class="sub"><b>${esc(f.name)}さん</b>は、${a.items.length}件に ◯× を押すだけ。<b>30秒で終わります。</b></p>
   <div class="card m16" style="background:#FAF6F2;border-color:transparent">
     <p class="jlab">相手に見える文</p>
-    <p style="font-size:14.5px;margin-top:7px">「${esc(S.user.name)}さんから<br>
-    『ちょっと好みを教えて』が届きました」</p>
+    <p style="font-size:14.5px;margin-top:7px">「${esc(S.user.name)}さんから<br>『ちょっと好みを教えて』が届きました」</p>
     <p class="sub" style="font-size:11.5px;margin-top:8px">※ギフトのことは、ひとことも書いていません</p>
   </div>
-  <p class="jlab m16">送るリンク</p>
-  <div class="url">${esc(url)}</div>
-  <button class="btn m16" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
+  <div class="url m16">${esc(url)}</div>
+  <button class="btn m12" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
   <button class="btn o" data-a="openr" data-v="${esc(url)}">▶ 相手の画面を見る（デモ用）</button>
   <button class="btn g" data-a="home">ホームへ</button>
 </div>`},
 
-/* --- ★相手が◯×で答える（ログイン不要） --- */
 pans(){
   const q = S.pbox; if(!q) return V.home();
   const ans = S.pans || {};
@@ -538,8 +589,7 @@ pans(){
   <div class="prog"><i style="width:${Math.round(done/q.items.length*100)}%"></i></div>
   <p class="jlab">${esc(q.s)}さんから</p>
   <h1 style="margin-top:3px">ちょっと好みを<br>教えてください</h1>
-  <p class="sub">${q.items.length}件に ◯ か × を押すだけ。<b>30秒で終わります。</b><br>
-  正直に答えてもらえるほど、助かります。</p>
+  <p class="sub">${q.items.length}件に ◯ か × を押すだけ。<b>30秒で終わります。</b></p>
   <div class="m16">${q.items.map(id=>{
     const g = GI(id); if(!g) return "";
     const v = ans[id];
@@ -560,12 +610,10 @@ psent(){ return `
 <div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
   <div style="font-size:56px">🙆</div>
   <h1 class="m16">ありがとうございます</h1>
-  <p class="sub">答えてくれた内容は、<b>相手に届きます。</b><br>
-  何に使われるかは、お楽しみに。</p>
+  <p class="sub">答えてくれた内容は、<b>相手に届きます。</b><br>何に使われるかは、お楽しみに。</p>
   <button class="btn m24" data-a="home">自分も使ってみる</button>
 </div>`},
 
-/* --- 好みの結果を見る（贈る人） --- */
 ansview(){
   const a = S.asks.find(x => x.id === S.draft.askId); if(!a) return V.home();
   const f = friend(a.toId);
@@ -1002,6 +1050,345 @@ V.talk = function(){
 </div>`;
 };
 
+/* ==================================================================
+   ★ ギフト診断・記念日リマインド・ギフト計画（プロジェクトギフト）
+   ================================================================== */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+  .qz{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--sh)}
+  .qz h2{font-size:19px;line-height:1.5}
+  .ab{width:100%;padding:17px;border:1.5px solid var(--line);border-radius:15px;background:var(--surface);
+      font-family:inherit;font-size:15.5px;font-weight:700;text-align:left;cursor:pointer;margin-top:10px;
+      transition:.15s;color:var(--ink);display:flex;align-items:center;gap:11px}
+  .ab:active{transform:scale(.99)}
+  .ab b{flex:0 0 30px;height:30px;border-radius:9px;background:var(--soft);color:var(--accent);
+        display:grid;place-items:center;font-size:14px}
+  .ab:hover{border-color:var(--accent)}
+  .tc{background:var(--grad);color:#fff;border-radius:24px;padding:28px 22px;text-align:center;
+      box-shadow:0 18px 44px rgba(224,97,74,.3);position:relative;overflow:hidden}
+  .tc::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 12%,rgba(255,255,255,.22),transparent 60%)}
+  .tc>*{position:relative}
+  .tc .ic{font-size:58px;line-height:1}
+  .tc .nm{font-size:25px;font-weight:800;margin-top:8px;letter-spacing:-.02em}
+  .tc .sb{font-size:13.5px;opacity:.9;margin-top:6px;line-height:1.7}
+  .tc .bx{background:rgba(255,255,255,.2);border-radius:15px;padding:14px;margin-top:17px;text-align:left;font-size:13.5px;line-height:1.8}
+  .st{display:flex;gap:11px;align-items:flex-start;padding:13px;border:1.5px solid var(--line);
+      border-radius:14px;background:var(--surface);margin-bottom:9px;cursor:pointer}
+  .st.ok{background:var(--okbg);border-color:rgba(62,122,88,.3)}
+  .st .ck{flex:0 0 24px;height:24px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;
+          font-size:13px;color:#fff;margin-top:1px}
+  .st.ok .ck{background:var(--ok);border-color:var(--ok)}
+  .st .tt{flex:1;font-size:14.5px;font-weight:700;line-height:1.55}
+  .st.ok .tt{text-decoration:line-through;opacity:.6}
+  .st .dd{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ===== ギフト診断（8問） ============================================
+   軸： keep(残る/消える) / self(自分で選ぶ/選んでほしい)
+        use(実用/気分) / new(定番/珍しい)
+   =================================================================== */
+const DQ = [
+  { q:"もらってうれしいのは、どちらに近いですか？",
+    a:[["ずっと残るもの","keep+"],["食べたり使ったりして無くなるもの","keep-"]] },
+  { q:"プレゼントは、どちらがうれしいですか？",
+    a:[["自分で選びたい（カタログや選べるギフト）","self+"],["相手に選んでほしい","self-"]] },
+  { q:"どちらをもらうことが多いと、助かりますか？",
+    a:[["毎日つかえる実用的なもの","use+"],["気分が上がるもの・ちょっと贅沢なもの","use-"]] },
+  { q:"どちらに惹かれますか？",
+    a:[["定番で間違いのないもの","new-"],["見たことがない珍しいもの","new+"]] },
+  { q:"甘いものは好きですか？",
+    a:[["好き","sweet+"],["苦手・あまり食べない","sweet-"]] },
+  { q:"香りのあるもの（お香・アロマ・香水）は？",
+    a:[["好き","arom+"],["苦手・好みが強い","arom-"]] },
+  { q:"高めのプレゼントをもらったら？",
+    a:[["素直にうれしい","price+"],["気をつかってしまう","price-"]] },
+  { q:"最後に。どちらがうれしいですか？",
+    a:[["モノをもらう","exp-"],["どこかへ行く・体験する","exp+"]] }
+];
+
+const DTYPES = {
+  jitsu:{ icon:"🧺", name:"毎日つかう派", sub:"実用的で、生活の中で出番があるものが好き。",
+    like:["くらし","こもの","のみもの"], avoid:["インテリア"],
+    tip:"「使い道があるか」で選ぶと喜ばれます。消耗品なら、かぶっても困りません。" },
+  kie:{ icon:"🍫", name:"消えもの派", sub:"残らないほうが気楽。食べ物・飲み物がうれしい。",
+    like:["おかし","たべもの","のみもの"], avoid:["インテリア","こもの"],
+    tip:"置き場所に困らせません。日持ちだけ気をつけてください。" },
+  toki:{ icon:"✨", name:"ときめき派", sub:"自分では買わない、少し贅沢なものに弱い。",
+    like:["コスメ","はな","インテリア"], avoid:["くらし"],
+    tip:"実用性より「気分が上がるか」。見た目も大事にしてください。" },
+  taiken:{ icon:"🎫", name:"体験派", sub:"モノより思い出。どこかへ行けるものがうれしい。",
+    like:["たいけん"], avoid:["こもの","インテリア"],
+    tip:"一緒に行けるものだと、さらに喜ばれます。" },
+  kodawari:{ icon:"🔍", name:"自分で選びたい派", sub:"選ぶ楽しさも含めてギフト。外されるのが少し怖い。",
+    like:["たいけん","のみもの"], avoid:["コスメ","インテリア"],
+    tip:"選べるギフトや、◯×で好みを聞いてから贈るのが安全です。" },
+  teiban:{ icon:"🎀", name:"定番あんしん派", sub:"珍しさより、間違いのない定番がうれしい。",
+    like:["おかし","のみもの","くらし"], avoid:["インテリア"],
+    tip:"冒険しないほうが喜ばれます。質のいい定番を。" }
+};
+const DT = id => DTYPES[id] || DTYPES.jitsu;
+
+function diagType(sc){
+  if(sc.exp > 0) return "taiken";
+  if(sc.self > 0) return "kodawari";
+  if(sc.keep < 0) return "kie";
+  if(sc.use > 0) return "jitsu";
+  if(sc.new < 0) return "teiban";
+  return "toki";
+}
+/* 診断結果から、商品のおすすめ度を出す */
+function diagScore(diag, g){
+  if(!diag) return 0;
+  const t = DT(diag.type);
+  let s = 0;
+  if(t.like.indexOf(g.cat) >= 0) s += 3;
+  if(t.avoid.indexOf(g.cat) >= 0) s -= 4;
+  const sc = diag.sc || {};
+  if(sc.sweet < 0 && g.cat === "おかし") s -= 3;
+  if(sc.arom  < 0 && (g.cat === "リラックス" || g.cat === "コスメ")) s -= 2;
+  if(sc.price < 0 && g.price >= 3000) s -= 2;
+  if(sc.exp   > 0 && g.cat === "たいけん") s += 2;
+  return s;
+}
+
+/* ===== 画面：診断 =================================================== */
+V.diag = function(){
+  const i = S.dq || 0;
+  if(i >= DQ.length) return V.diagres();
+  const q = DQ[i];
+  return `
+<div class="scr">
+  <div class="prog"><i style="width:${Math.round(i/DQ.length*100)}%"></i></div>
+  <p class="jlab">ギフト診断　${i+1} / ${DQ.length}</p>
+  <div class="qz m16">
+    <h2>${esc(q.q)}</h2>
+    ${q.a.map((x,n)=>`<button class="ab" data-a="dq" data-v="${esc(x[1])}">
+      <b>${n===0?"A":"B"}</b><span>${esc(x[0])}</span></button>`).join("")}
+  </div>
+  <p class="sub" style="font-size:12px">深く考えなくて大丈夫です。<b>直感で選んでください。</b></p>
+  ${i>0?`<button class="btn g m16" data-a="dback">‹ ひとつ戻る</button>`:`<button class="btn g m16" data-a="home">やめる</button>`}
+</div>`;
+};
+
+V.diagres = function(){
+  const d = S.diag || S.diagTmp; if(!d) return V.home();
+  const t = DT(d.type);
+  const url = location.origin + location.pathname + "?d=" + pack({ n:S.user?S.user.name:"だれか", t:d.type, s:d.sc });
+  return `
+<div class="scr">
+  <p class="jlab">ギフト診断の結果</p>
+  <div class="tc m12">
+    <div class="ic">${t.icon}</div>
+    <div class="nm">${t.name}</div>
+    <div class="sb">${esc(t.sub)}</div>
+    <div class="bx">
+      <b>うれしいもの</b><br>${t.like.join("・")}<br><br>
+      <b>すこし苦手</b><br>${t.avoid.join("・")}${d.sc.sweet<0?"・甘いもの":""}${d.sc.arom<0?"・香りの強いもの":""}<br><br>
+      <b>予算の感じ方</b><br>${d.sc.price<0?"高いと気をつかってしまう":"高くても素直にうれしい"}
+    </div>
+  </div>
+  <div class="card m16" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">贈る人へのヒント</p>
+    <p style="font-size:14.5px;margin-top:6px">${esc(t.tip)}</p>
+  </div>
+  <h2 class="m24">このカードを配っておくと</h2>
+  <p class="sub">友だちは<b>あなたの好みを知った上で</b>選べます。<br>
+  「何がほしい？」と聞かれる気まずさも、なくなります。</p>
+  <div class="url m12">${esc(url)}</div>
+  <button class="btn m12" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
+  <button class="btn o" data-a="openr" data-v="${esc(url)}">▶ 友だちに見える画面（デモ用）</button>
+  ${S.diag?`<button class="btn g" data-a="home">ホームへ</button>`
+          :`<button class="btn s" data-a="dsave">この結果を保存する</button>`}
+  <button class="btn g" data-a="dagain">もう一度やる</button>
+</div>`;
+};
+
+/* 友だちが診断カードを見る（ログイン不要） */
+V.dview = function(){
+  const c = S.dbox; if(!c) return V.home();
+  const t = DT(c.t);
+  return `
+<div class="scr">
+  <p class="jlab">${esc(c.n)}さんのギフトタイプ</p>
+  <div class="tc m12">
+    <div class="ic">${t.icon}</div>
+    <div class="nm">${t.name}</div>
+    <div class="sb">${esc(t.sub)}</div>
+    <div class="bx">
+      <b>うれしいもの</b><br>${t.like.join("・")}<br><br>
+      <b>すこし苦手</b><br>${t.avoid.join("・")}${c.s&&c.s.sweet<0?"・甘いもの":""}${c.s&&c.s.arom<0?"・香りの強いもの":""}<br><br>
+      <b>予算の感じ方</b><br>${c.s&&c.s.price<0?"高いと気をつかってしまう":"高くても素直にうれしい"}
+    </div>
+  </div>
+  <div class="card m16" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">贈るときのヒント</p>
+    <p style="font-size:14.5px;margin-top:6px">${esc(t.tip)}</p>
+  </div>
+  <div class="card ok m16">
+    <p style="font-size:14.5px"><b>${esc(c.n)}さんに贈りますか？</b><br>
+    このタイプに合う候補を、すぐ出せます。</p>
+    <button class="btn" style="margin-top:12px" data-a="home">GiftHub を使ってみる</button>
+  </div>
+  <button class="btn s" data-a="diag">自分も診断してみる</button>
+</div>`;
+};
+
+/* ===== 記念日 ======================================================= */
+function upcomingBirthdays(){
+  const now = new Date();
+  return S.friends.filter(f => f.bd).map(f => {
+    const [m, d] = f.bd.split("-").map(Number);
+    let t = new Date(now.getFullYear(), m-1, d);
+    if(t < new Date(now.getFullYear(), now.getMonth(), now.getDate())) t = new Date(now.getFullYear()+1, m-1, d);
+    const days = Math.round((t - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+    return { f, days, md:f.bd };
+  }).filter(x => x.days <= 14).sort((a,b) => a.days - b.days);
+}
+
+/* ===== ギフト計画（プロジェクトギフト） ==============================
+   ユーザーの案：先にゴールを決めて、タスクのように進める
+   アンケートでは「決めさせる」入口は求められていなかったので、
+   誕生日まで日があるときの「任意の道具」として置いています。
+   =================================================================== */
+const PGOALS = ["元気になってほしい","ありがとうを伝えたい","また会いたい","お祝いしたい","仲直りしたい","応援したい"];
+function makeSteps(){
+  return [
+    { t:"相手の好みを ◯× で聞く",       ok:false },
+    { t:"候補を3つにしぼる",             ok:false },
+    { t:"ひと言のメッセージを決める",     ok:false },
+    { t:"ラッピングを決める",             ok:false },
+    { t:"注文する",                       ok:false },
+    { t:"リンクを送る",                   ok:false }
+  ];
+}
+
+V.newplan = function(){
+  const f = friend(S.draft.toId);
+  const b = upcomingBirthdays().find(x => x.f.id === f.id);
+  return `
+<div class="scr">
+  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="backPick">‹ もどる</button>
+  <p class="jlab">📋 ギフト計画</p>
+  <h1 style="margin-top:3px">${esc(f.name)}さんに、<br>どうなってほしいですか？</h1>
+  <p class="sub">先にゴールを決めると、<b>選ぶときに迷わなくなります。</b><br>
+  ${b?`${esc(f.name)}さんの誕生日まで <b>あと${b.days}日</b>です。`:"日があるときほど、効きます。"}</p>
+  <div class="chips">${PGOALS.map(g=>`
+    <button class="chip ${S.pgoal===g?"on":""}" data-a="pg" data-v="${esc(g)}">${esc(g)}</button>`).join("")}</div>
+  <div class="fld m16"><label class="jlab">いつまでに？（任意）</label>
+    <input id="pdue" placeholder="例：11/08" value="${esc(b?b.md.replace("-","/"):"")}"></div>
+  <button class="btn" data-a="mkplan" ${S.pgoal?"":"disabled"}>計画をつくる</button>
+</div>`;
+};
+
+V.plan = function(){
+  const p = (S.plans||[]).find(x => x.id === S.planId); if(!p) return V.home();
+  const f = friend(p.toId);
+  const dn = p.steps.filter(s => s.ok).length;
+  return `
+<div class="scr">
+  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
+  <p class="jlab">📋 ギフト計画</p>
+  <h1 style="margin-top:3px">${esc(f.name)}さんに<br>「${esc(p.goal)}」</h1>
+  <p class="sub">${p.due?`締切 ${esc(p.due)}　／　`:""}${dn} / ${p.steps.length} 完了</p>
+  <div class="prog m12"><i style="width:${Math.round(dn/p.steps.length*100)}%;background:#7B5EA7"></i></div>
+  <div class="m16">${p.steps.map((s,i)=>`
+    <div class="st ${s.ok?"ok":""}" data-a="ps" data-v="${i}">
+      <div class="ck">${s.ok?"✓":""}</div>
+      <div><div class="tt">${esc(s.t)}</div></div>
+    </div>`).join("")}</div>
+  ${dn===p.steps.length?`<div class="card ok m16" style="text-align:center">
+    <div style="font-size:40px">🎉</div>
+    <p style="font-size:15px;font-weight:800;margin-top:6px">計画どおり、やりきりました</p>
+  </div>`:""}
+  <button class="btn m16" data-a="toItems">贈るものを決める</button>
+  <button class="btn g" data-a="delplan">この計画をやめる</button>
+</div>`;
+};
+
+/* ===== AIの知識を追加（ギフトーク強化） ============================= */
+KB.push(
+  { k:["大和","やまと","ヤマト","どうぞ","dozo","antina","アンティナ"],
+    a:"<b>株式会社 大和（やまと）</b>は、長野県安曇野市のギフトの会社です（オンワードHDグループ）。\n\nタグラインは <b>「無数のきもちを、かたちに織り込む」</b>。\n直営の <b>antina gift studio</b> と、ソーシャルギフトの <b>dōzo</b> を持っています。\n\n<b>「ギフトをえらぶことは、誰かのことを一生懸命考えること」</b>——これは antina の言葉です。",
+    act:null },
+  { k:["ラッピング","包装","のし","リボン","箱"],
+    a:"包み方で、印象がかなり変わります。\n\n<b>・そのまま</b>　気を使わせたくないとき\n<b>・かんたん包装</b>　+110円。ふだんのギフトはこれで十分\n<b>・化粧箱入り</b>　+330円。きちんと見せたいとき\n<b>・のし（紅白蝶結び）</b>　+220円。お祝い・内祝い\n\n<b>蝶結びは「何度あってもうれしいこと」</b>に使います。結婚祝いは結び切りなので注意です。",
+    act:null },
+  { k:["日持ち","賞味期限","消費期限","腐","冷蔵","冷凍"],
+    a:"食べ物を贈るときは、<b>日持ちが一番の落とし穴</b>です。\n\n<b>・3〜5日</b>　生菓子・ケーキ。<b>会える日に渡すのが向いています</b>\n<b>・2週間〜1か月</b>　焼き菓子。郵送でも安心\n<b>・半年以上</b>　コーヒー・お茶・乾麺。いつでも大丈夫\n\nこのアプリでは、<b>日持ちが短いものを選ぶと、ひと言が自動で変わります。</b>",
+    act:null },
+  { k:["診断","タイプ","性格","好みが分から"],
+    a:"<b>ギフト診断</b>があります。8問・1分です。\n\n本人に答えてもらうと、<b>どんなギフトを喜ぶタイプか</b>が分かります。\n結果のリンクを配っておけば、<b>贈る人は最初から好みを知った状態</b>で選べます。\n\n「何がほしい？」と聞く気まずさが、なくなります。",
+    act:"diag" },
+  { k:["誕生日","記念日","忘れ","リマインド","通知"],
+    a:"このアプリは、<b>誕生日の2週間前にお知らせ</b>します。\n\n<b>早めに気づくほど、選べるものが増えます。</b>\n当日に気づくと、デジタルで贈れるものしか残りません。\n\nアンケートでも、こんな声がありました。\n<b>「記録した日時が近づくと（1か月〜2週間前）に教えてくれる機能」</b>",
+    act:null },
+  { k:["予算","いくら","相場","値段","金額"],
+    a:"友人へのギフトは、<b>関係の近さで変わります</b>。\n\n<b>・職場や知り合い</b>　1,000〜2,000円\n<b>・友人</b>　3,000〜5,000円\n<b>・親しい友人・家族</b>　5,000円〜\n\n<b>高すぎると相手が気をつかいます。</b>お返しを考えさせてしまうからです。\n診断で「高いと気をつかう」と答えた人には、<b>高額なものを出さないようにしています。</b>\n\n※一般的な目安です。<b>出典のある数字ではありません。</b>",
+    act:null },
+  { k:["体験ギフト","チケット","食事券","旅行"],
+    a:"体験ギフトは <b>「会うきっかけ」になる</b> のが強みです。\n\n<b>・向いている</b>　しばらく会えていない友人、好みが分からない相手\n<b>・注意</b>　遠方の人、忙しい人（使えないと逆に負担）\n\n<b>有効期限と場所は必ず確認</b>してください。",
+    act:null },
+  { k:["お返し","内祝い","半返し","もらっ"],
+    a:"もらったものへのお返しは、<b>半分〜3分の1</b>が目安とされています。\n\n<b>同額を返すと「もう付き合いはいい」という意味</b>になる、という説もあります（地域差があります）。\n\nただ、<b>友人同士ならそこまで気にしない人が増えています。</b>関係性しだいです。",
+    act:null },
+  { k:["何を","決まらない","わからない","分からない","迷"],
+    a:"決まらないときは、<b>選択肢を減らすのが一番効きます</b>。\n\nアンケートでも、<b>53人中23人が「候補が多すぎて決まらない」</b>と答えていました。\n\n<b>いちばん確実なのは、本人に聞くことです。</b>\nこのアプリなら、<b>何を贈るつもりかを隠したまま</b>、◯× で好みだけ聞けます。",
+    act:"ask" }
+);
+
+/* ==================================================================
+   候補の出し方を上書き（診断結果を反映する版）
+   いままで：◯×で聞いた結果だけを見ていた
+   これから：①相手の診断結果 ②◯×の答え ③かぶり の3つで並べ替える
+   ================================================================== */
+suggest = function(fid, n, budget){
+  const f  = friend(fid);
+  const pr = prefsOf(fid);
+  const dg = f.diag ? { type:f.diag, sc:(f.diagSc || {}) } : null;
+
+  let pool = GIFTS.filter(g => pr[g.id] !== "n");
+  if(budget) pool = pool.filter(g => g.price >= budget[0] && g.price <= budget[1]);
+  if(!pool.length) pool = GIFTS.slice();
+
+  const scored = pool.map(g => {
+    let s = 0;
+    if(pr[g.id] === "y") s += 6;          /* 本人が◯をつけた＝最優先 */
+    else if(pr[g.id] === "m") s += 1;
+    s += diagScore(dg, g);                 /* 診断のタイプに合うか */
+    if(alreadySent(fid, g.id)) s -= 5;     /* かぶりは後ろへ */
+    return { g, s };
+  }).sort((a,b) => b.s - a.s);
+
+  /* 「ほかの3つを見る」用：上位から順にずらして出す */
+  const seed = (S.draft && S.draft.seed) ? S.draft.seed : 0;
+  const top  = scored.slice(0, Math.max(9, (n||3) * 3));
+  const off  = (seed * (n||3)) % Math.max(1, top.length);
+  const out  = top.slice(off).concat(top.slice(0, off));
+  return out.slice(0, n || 3).map(x => x.g);
+};
+
+/* AIの「診断する」ボタンを有効にする */
+(function(){
+  const base = talkAnswer;
+  talkAnswer = function(q){
+    const r = base(q);
+    if(r && r.act === "diag") return r;
+    return r;
+  };
+})();
+
+/* 診断カードのボタンを押せるように（V.talk の act に diag を足す） */
+(function(){
+  const base = V.talk;
+  V.talk = function(){
+    return base().replace(/data-a="fromTalkAsk">🙆 本人に ◯× で聞いてみる<\/button>/g,
+      'data-a="fromTalkAsk">🙆 本人に ◯× で聞いてみる</button><button data-a="fromTalkDiag">🎯 ギフト診断をする</button>');
+  };
+})();
+
 /* 追加スタイル（購入フロー用） */
 (function(){
   const s = document.createElement("style");
@@ -1013,7 +1400,6 @@ V.talk = function(){
   .rc b,.rc span:last-child{text-align:right}
   .rc.tot{border-top:2px solid var(--ink);border-bottom:0;margin-top:6px;padding-top:11px;font-size:16px}
   .rc.tot b{font-size:21px;font-weight:800}
-  .steps i{transition:.3s}
   `;
   document.head.appendChild(s);
 })();
@@ -1025,15 +1411,73 @@ function act(d){
     case "login": {
       const n=(document.getElementById("nm").value||"").trim();
       if(!n){ alert("名前を入れてください"); return; }
-      S=seed(n); save(); go("home"); break;      /* ★本物の認証はこの行を差しかえ */
+      S=seed(n); save(); go("diag"); break;    /* ★本物の認証はこの行を差しかえ／登録後すぐ診断へ */
     }
     case "demo":   S=seed("つばさ"); save(); go("home"); break;
     case "logout": S.session.in=false; save(); go("login"); break;
-    case "home":   S.draft=null; save(); go("home"); break;
+    case "home":   S.draft=null; S.planId=null; save(); go("home"); break;
     case "note":   go("note"); break;
     case "jump":   go(d.v); break;
     case "wipe":   if(confirm("保存したデータを消して最初からにしますか？")) wipe(); break;
 
+    /* ===== ギフト診断 ===== */
+    case "diag": S.dq = 0; S.dsc = { keep:0, self:0, use:0, new:0, sweet:0, arom:0, price:0, exp:0 };
+                 S.diagTmp = null; save(); go("diag"); break;
+    case "dq": {
+      const key = d.v.slice(0, -1), sign = d.v.slice(-1) === "+" ? 1 : -1;
+      S.dsc = S.dsc || {}; S.dsc[key] = (S.dsc[key] || 0) + sign;
+      S.dhist = (S.dhist || []).concat([d.v]);
+      S.dq = (S.dq || 0) + 1;
+      if(S.dq >= DQ.length){ S.diagTmp = { type: diagType(S.dsc), sc: S.dsc, at: today() }; }
+      save(); go("diag"); break;
+    }
+    case "dback": {
+      if((S.dq||0) <= 0) break;
+      const last = (S.dhist||[]).pop();
+      if(last){ const k = last.slice(0,-1), s = last.slice(-1)==="+"?1:-1; S.dsc[k] -= s; }
+      S.dq--; S.diagTmp = null; save(); go("diag"); break;
+    }
+    case "dsave": {
+      S.diag = S.diagTmp || S.diag;
+      /* 自分の診断は、見本の友だちにも入れておく（デモで効果が見えるように） */
+      if(S.friends[0] && !S.friends[0].diag) S.friends[0].diag = "kie";
+      if(S.friends[1] && !S.friends[1].diag) S.friends[1].diag = "taiken";
+      save(); go("home"); break;
+    }
+    case "dagain": S.dq = 0; S.dsc = { keep:0, self:0, use:0, new:0, sweet:0, arom:0, price:0, exp:0 };
+                   S.dhist = []; S.diagTmp = null; save(); go("diag"); break;
+    case "mycard": S.diagTmp = S.diag; save(); go("diagres"); break;
+
+    /* ===== ギフト計画 ===== */
+    case "newplan": S.pgoal = null; save(); go("newplan"); break;
+    case "pg": S.pgoal = d.v; save(); go("newplan"); break;
+    case "mkplan": {
+      const due = (document.getElementById("pdue")||{}).value || "";
+      const id = "p"+Date.now();
+      S.plans = S.plans || [];
+      S.plans.unshift({ id, toId:D.toId, goal:S.pgoal, due, steps:makeSteps(), done:false, at:today() });
+      S.planId = id; S.pgoal = null; save(); go("plan"); break;
+    }
+    case "plan": {
+      const p = (S.plans||[]).find(x => x.id === d.id); if(!p) break;
+      S.planId = p.id;
+      S.draft = { toId:p.toId, askItems:[], giftId:null, emotion:null, message:"",
+                  ho:false, budget:0, wrapId:null, card:true, payId:"card" };
+      save(); go("plan"); break;
+    }
+    case "ps": {
+      const p = (S.plans||[]).find(x => x.id === S.planId); if(!p) break;
+      p.steps[Number(d.v)].ok = !p.steps[Number(d.v)].ok;
+      p.done = p.steps.every(s => s.ok);
+      save(); go("plan"); break;
+    }
+    case "delplan": {
+      if(!confirm("この計画をやめますか？")) break;
+      S.plans = (S.plans||[]).filter(x => x.id !== S.planId);
+      S.planId = null; save(); go("home"); break;
+    }
+
+    /* ===== 相手を選ぶ ===== */
     case "pick": S.draft={ toId:d.id, askItems:[], giftId:null, emotion:null, message:"",
                            ho:false, budget:0, wrapId:null, card:true, payId:"card" };
                  save(); go("pick"); break;
@@ -1081,18 +1525,13 @@ function act(d){
       else { alert("まず、だれに贈るかを選んでください。"); go("home"); }
       break;
     }
+    case "fromTalkDiag": go("diag"); break;
 
     /* ① 選ぶ */
     case "toItems": go("items"); break;
     case "bud":  D.budget = Number(d.v); D.giftId = null; save(); go("items"); break;
     case "gi":   D.giftId = d.id; save(); go("items"); break;
-    case "reroll": {
-      /* 候補を入れ替える（同じ条件の中からシャッフル） */
-      D.seed = (D.seed||0) + 1;
-      const pool = suggest(D.toId, 12, BUDGETS[D.budget||0][1]);
-      if(pool.length > 3){ const h = pool.splice(0, (D.seed*3) % pool.length); pool.push.apply(pool, h); }
-      D.giftId = null; save(); go("items"); break;
-    }
+    case "reroll": D.seed = (D.seed||0) + 1; D.giftId = null; save(); go("items"); break;
 
     /* ② ひと言 */
     case "toWord": go("word"); break;
@@ -1112,17 +1551,10 @@ function act(d){
       save(); go("wrap"); break;
     }
     case "wr": D.wrapId = d.id; save(); go("wrap"); break;
-    case "cardck": {
-      const c = document.getElementById("card");
-      D.card = c ? c.checked : !D.card; save(); break;
-    }
+    case "cardck": { const c = document.getElementById("card"); D.card = c ? c.checked : !D.card; save(); break; }
 
     /* ④ 支払い */
-    case "toPay": {
-      const c = document.getElementById("card");
-      if(c) D.card = c.checked;
-      save(); go("pay"); break;
-    }
+    case "toPay": { const c = document.getElementById("card"); if(c) D.card = c.checked; save(); go("pay"); break; }
     case "py": D.payId = d.id; save(); go("pay"); break;
 
     /* ⑤ 注文確定 */
@@ -1137,6 +1569,9 @@ function act(d){
         wrap:{ id:w.id, name:w.name, price:w.price },
         card:!!D.card, pay:p.id, total, receive:null, reply:null
       });
+      /* 計画があれば「注文する」に自動でチェック */
+      const pl = (S.plans||[]).find(x => x.toId === D.toId && !x.done);
+      if(pl){ pl.steps[4].ok = true; pl.done = pl.steps.every(s=>s.ok); }
       D.orderId = id; save(); go("ordered"); break;
     }
 
@@ -1179,10 +1614,6 @@ function talkSend(q){
   setTimeout(()=>window.scrollTo(0, document.body.scrollHeight), 60);
 }
 
-/* ===== ひと言のたたき台 ==============================================
-   ⚠️ AIが代筆するのではありません。たたき台を出すだけ。
-      本物のAIにするなら、この関数の中だけを置きかえてください。
-   =================================================================== */
 function compose(d){
   const e = EM(d.emotion), g = GI(d.giftId);
   let tail = g ? "\n" + g.name + "、よかったら使ってね。" : "";
@@ -1193,9 +1624,10 @@ function compose(d){
 /* ===== 起動 ========================================================= */
 (function boot(){
   const q = new URLSearchParams(location.search);
-  const r = q.get("r"), p = q.get("p");
+  const r = q.get("r"), p = q.get("p"), dd = q.get("d");
   if(r){ const o = unpack(r); if(o){ S.inbox=o; S.opened=false; S.rmethod=null; cur="recv"; draw(); return; } }
   if(p){ const o = unpack(p); if(o){ S.pbox=o; S.pans=S.pans||{}; cur="pans"; draw(); return; } }
+  if(dd){ const o = unpack(dd); if(o){ S.dbox=o; cur="dview"; draw(); return; } }
   cur = S.session.in ? "home" : "login";
   draw();
 })();
