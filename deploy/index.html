@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#E0614A">
+<title>きもちのあと（仮）</title>
+<style>
+/* ==================================================================
+   v0.7  ── アンケート n=29 の結果を反映した版
+   ■ 変えたところ
+     1. 入口を「気持ちを決める」から「候補を出す」へ
+        （Q4で「何を伝えたいかが決まらない」は 0/28人だったため）
+     2. ★新機能：中身を隠したまま ◯× で好みを聞く
+        （自由記述の実践例。Q7で本音を言う人が 0/29人だったため）
+     3. 答え合わせを「伝わった？」から「もう使った？」へ
+        （評価ではなく事実。嘘をつく動機がない）
+     4. かぶり防止（過去に贈ったものに印）
+     5. ○年前の今日（写真を使わずに思い出を残す）
+   ================================================================== */
+:root{
+  --bg:#FFFCF9; --surface:#fff; --ink:#1F1A17; --ink2:#4A4138; --muted:#8E8075;
+  --accent:#E0614A; --accent2:#C9568B; --soft:#FDEEE9; --ok:#3E7A58; --okbg:#E6F0EA;
+  --no:#9B8E84; --line:#F2E9E2; --r:20px;
+  --grad:linear-gradient(135deg,#E0614A 0%,#C9568B 100%);
+  --grad-soft:linear-gradient(135deg,#FDEEE9 0%,#FBF0F6 100%);
+  --sh:0 1px 2px rgba(31,26,23,.04),0 12px 32px rgba(31,26,23,.055);
+  --sh-lift:0 2px 6px rgba(31,26,23,.06),0 20px 48px rgba(224,97,74,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);line-height:1.72;font-size:16px;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;
+  font-feature-settings:"palt" 1;-webkit-font-smoothing:antialiased;
+  display:flex;justify-content:center;letter-spacing:.005em}
+#app{width:100%;max-width:430px;min-height:100vh;display:flex;flex-direction:column;
+  background:var(--bg);position:relative;overflow:hidden}
+#app::before{content:"";position:absolute;top:-180px;right:-120px;width:340px;height:340px;
+  border-radius:50%;background:var(--grad-soft);filter:blur(10px);opacity:.75;pointer-events:none}
+.scr{flex:1;padding:26px 20px 112px;position:relative;z-index:1;
+  animation:in .34s cubic-bezier(.16,.84,.26,1)}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+h1{font-size:24px;line-height:1.42;font-weight:800;letter-spacing:-.018em}
+h2{font-size:17.5px;font-weight:800;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:13.5px;line-height:1.72;margin-top:7px}
+.jlab{font-size:11.5px;font-weight:800;color:var(--muted);letter-spacing:.08em}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px;box-shadow:var(--sh)}
+.card.hl{border-color:rgba(224,97,74,.35);box-shadow:var(--sh-lift)}
+.card.ok{border-color:rgba(62,122,88,.3);background:#FBFEFC}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:17px;
+  border:0;border-radius:16px;background:var(--grad);color:#fff;font-size:16px;font-weight:800;
+  font-family:inherit;cursor:pointer;letter-spacing:.01em;
+  box-shadow:0 6px 18px rgba(224,97,74,.26);transition:transform .14s,box-shadow .2s,opacity .18s}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn[disabled]{opacity:.3;box-shadow:none;cursor:default}
+.btn.g{background:transparent;color:var(--muted);font-weight:700;padding:13px;box-shadow:none}
+.btn.s{background:var(--soft);color:var(--accent);box-shadow:none}
+.btn.o{background:var(--surface);color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+
+input,textarea{width:100%;padding:15px 16px;font-size:16px;font-family:inherit;line-height:1.7;
+  border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);resize:none;
+  transition:border-color .16s}
+input:focus,textarea:focus{outline:0;border-color:var(--accent)}
+.fld{margin-bottom:14px}
+.fld .jlab{display:block;margin-bottom:8px}
+
+/* 循環図 */
+.loop{display:grid;place-items:center;margin:6px auto 0}
+.loop svg{display:block;overflow:visible}
+.loop .trk{fill:none;stroke:var(--line);stroke-width:2}
+.loop .arc{fill:none;stroke:#E0614A;stroke-width:3;stroke-linecap:round;
+  stroke-dasharray:478;stroke-dashoffset:478;animation:dash 2.6s cubic-bezier(.3,.7,.3,1) .3s forwards}
+@keyframes dash{to{stroke-dashoffset:0}}
+.loop .nd{fill:#fff;stroke:var(--line);stroke-width:2.5}
+.loop .nd.on{fill:#E0614A;stroke:#E0614A}
+.loop .tx{font-size:11.5px;font-weight:800;fill:#8E8075;font-family:-apple-system,"Hiragino Sans",sans-serif}
+.loop .tx.on{fill:#E0614A}
+.loop .ctr{font-size:10px;font-weight:800;fill:#8E8075;letter-spacing:.12em}
+
+/* ★好みを聞く（◯×カード） */
+.pf{display:flex;gap:12px;align-items:center;padding:14px;border:1.5px solid var(--line);
+  border-radius:16px;background:var(--surface);margin-bottom:10px;transition:.16s}
+.pf .ic{width:50px;height:50px;flex:0 0 50px;border-radius:14px;background:var(--grad-soft);
+  display:grid;place-items:center;font-size:24px}
+.pf .m{flex:1;min-width:0}
+.pf .nm{font-weight:700;font-size:14.5px;line-height:1.45}
+.pf .pr{font-size:12.5px;color:var(--muted)}
+.pf.yes{border-color:var(--ok);background:var(--okbg)}
+.pf.no{opacity:.42}
+.pf.may{border-color:var(--line);background:#FAF7F4}
+.ox{display:flex;gap:7px;flex:0 0 auto}
+.ox button{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--surface);font-size:17px;font-family:inherit;cursor:pointer;
+  display:grid;place-items:center;transition:.14s;color:var(--muted);font-weight:800}
+.ox button:active{transform:scale(.9)}
+.ox button.on[data-v="y"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.ox button.on[data-v="n"]{background:var(--no);border-color:var(--no);color:#fff}
+.ox button.on[data-v="m"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.pick{display:flex;gap:12px;align-items:center;padding:16px;border:1.5px solid var(--line);
+  border-radius:17px;background:var(--surface);cursor:pointer;margin-bottom:11px;
+  box-shadow:var(--sh);transition:.15s}
+.pick:active{transform:scale(.99)}
+.pick .em{font-size:27px;width:46px;flex:0 0 46px;text-align:center}
+.pick b{display:block;font-size:15.5px;font-weight:800}
+.pick span{display:block;font-size:12px;color:var(--muted);line-height:1.5;margin-top:1px}
+.pick.main{border-color:var(--accent);background:var(--soft)}
+
+/* 好みの地図 */
+.map{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.tag{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;
+  background:var(--okbg);color:var(--ok)}
+.tag.x{background:#F3EFEB;color:var(--no);text-decoration:line-through}
+
+/* ○年前の今日 */
+.ago{background:var(--grad-soft);border:1px solid rgba(224,97,74,.18);border-radius:var(--r);
+  padding:17px;margin-top:16px}
+.ago .y{font-size:11.5px;font-weight:800;color:var(--accent);letter-spacing:.08em}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.chip{padding:10px 15px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);
+  font-size:14px;font-family:inherit;cursor:pointer;transition:.15s;color:var(--ink2)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.item{display:flex;gap:14px;align-items:center;padding:14px;border:1.5px solid var(--line);
+  border-radius:16px;background:var(--surface);cursor:pointer;margin-bottom:10px;transition:.15s}
+.item.on{border-color:var(--accent);background:var(--soft);box-shadow:var(--sh-lift)}
+.item.dup{opacity:.5}
+.item .ic{width:50px;height:50px;flex:0 0 50px;border-radius:14px;background:var(--grad-soft);
+  display:grid;place-items:center;font-size:24px}
+.item .nm{font-weight:700;font-size:14.5px;line-height:1.5}
+.item .pr{font-size:13px;color:var(--muted)}
+.badge{display:inline-block;font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;
+  background:var(--okbg);color:var(--ok);margin-left:6px}
+.badge.w{background:#FCF1E6;color:#9A6A2E}
+
+.av{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;
+  color:#fff;font-weight:800;font-size:16px}
+.row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.row:last-child{border-bottom:0}
+.row .m{flex:1;min-width:0}
+.row .nm{font-weight:700;font-size:15.5px}
+.row .nt{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+.vd{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;padding:5px 12px;border-radius:999px}
+.vd.u{background:var(--okbg);color:var(--ok)}
+.vd.s{background:var(--soft);color:var(--accent)}
+.vd.y{background:#F3EFEB;color:var(--muted)}
+.vbtn{width:100%;padding:16px;border:1.5px solid var(--line);border-radius:15px;background:var(--surface);
+  font-family:inherit;font-size:15.5px;font-weight:800;text-align:left;cursor:pointer;margin-bottom:9px;
+  transition:.15s;color:var(--ink)}
+.vbtn.on{border-color:var(--accent);background:var(--soft);box-shadow:var(--sh-lift)}
+.vbtn small{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:3px}
+
+.hero{background:var(--grad);border-radius:26px;padding:30px 22px;color:#fff;text-align:center;
+  box-shadow:0 18px 44px rgba(224,97,74,.3);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 70% 10%,rgba(255,255,255,.22),transparent 60%)}
+.hero>*{position:relative}
+.hero .big{font-size:60px;line-height:1;animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+.quote{background:rgba(255,255,255,.2);border-radius:16px;padding:15px;margin-top:18px;
+  font-size:14.5px;line-height:1.8;text-align:left}
+.seal{border:1.5px dashed rgba(255,255,255,.55);border-radius:16px;padding:20px;margin-top:18px;
+  cursor:pointer;font-size:13.5px;font-weight:800;background:rgba(255,255,255,.1)}
+
+.steps{display:flex;gap:5px;margin-bottom:20px}
+.steps i{flex:1;height:3px;border-radius:2px;background:var(--line);transition:.3s}
+.steps i.on{background:var(--accent)}
+.bar2{display:flex;gap:4px;align-items:center;margin-bottom:16px;font-size:11px;color:var(--muted);font-weight:700}
+.bar2 b{color:var(--accent)}
+
+.note{border:1.5px dashed var(--line);border-radius:var(--r);padding:22px;text-align:center;
+  color:var(--muted);font-size:13.5px}
+.bar{position:sticky;bottom:0;display:flex;gap:5px;padding:7px 9px;font-size:10.5px;z-index:5;
+  background:rgba(255,252,249,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.bar button{flex:1;padding:7px 2px;border:1px solid var(--line);background:var(--surface);
+  border-radius:9px;font-size:10px;font-family:inherit;color:var(--muted);cursor:pointer}
+.bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bar .t{display:grid;place-items:center;padding:0 6px;color:var(--muted);font-weight:800}
+.stack{display:flex;flex-direction:column;gap:12px}
+.m12{margin-top:12px}.m16{margin-top:16px}.m24{margin-top:24px}
+.url{font-size:11.5px;word-break:break-all;background:#F9F4EF;border-radius:12px;padding:12px;
+  color:var(--muted);line-height:1.6}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
+.sum div{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:14px 8px;text-align:center}
+.sum b{display:block;font-size:24px;font-weight:800;line-height:1.2}
+.sum span{font-size:10.5px;color:var(--muted);font-weight:700}
+.prog{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.prog i{display:block;height:100%;background:var(--grad);transition:width .3s}
+</style>
+</head>
+<body><div id="app"></div>
+<script>
+/* ==================================================================
+   きもちのあと（仮） v0.7
+   アンケート n=29（2026-10-21〜22）の結果を反映
+   ================================================================== */
+const CFG = { name:"きもちのあと", ver:"0.7", key:"kimochi_v07" };
+
+/* 気持ち（入口ではなく、ギフトを選んだ後に軽く選ぶ） */
+const EMOTIONS = [
+  { id:"thanks", icon:"🙏", label:"ありがとう", honest:false, t:"いつもありがとう。" },
+  { id:"cheer",  icon:"🔥", label:"がんばれ",   honest:false, t:"応援してる。無理しすぎないでね。" },
+  { id:"care",   icon:"🌙", label:"おつかれ",   honest:false, t:"最近大変そうだから、ちゃんと休んでね。" },
+  { id:"congra", icon:"🎉", label:"おめでとう", honest:false, t:"おめでとう。自分のことみたいにうれしい。" },
+  { id:"miss",   icon:"💭", label:"会いたい",   honest:false, t:"ふと思い出した。元気にしてる？" },
+  { id:"sorry",  icon:"🫧", label:"ごめんね",   honest:false, t:"ちゃんと謝りたかった。ごめんね。" },
+  { id:"duty",   icon:"📋", label:"正直、義理", honest:true,  t:"かたくならずに受け取ってもらえたら、うれしい。" },
+  { id:"self",   icon:"🫶", label:"自分のため", honest:true,  t:"どうしても渡したくなった。" },
+  { id:"crush",  icon:"🌷", label:"下心あり",   honest:true,  t:"よかったら、また話せたらうれしい。" }
+];
+const EM = id => EMOTIONS.find(e => e.id === id) || EMOTIONS[0];
+
+/* 商品（※実在ブランド名は許諾が取れるまで使わない） */
+const GIFTS = [
+  { id:"i01", icon:"☕", name:"ドリップコーヒー 6袋",      price:1620, cat:"のみもの" },
+  { id:"i02", icon:"🍪", name:"焼き菓子の詰め合わせ",      price:1080, cat:"おかし" },
+  { id:"i03", icon:"🌙", name:"アロマオイル（おやすみ）",  price:2200, cat:"リラックス" },
+  { id:"i04", icon:"🛁", name:"入浴剤セット",              price:880,  cat:"リラックス" },
+  { id:"i05", icon:"🌸", name:"ガーゼハンカチ",            price:770,  cat:"こもの" },
+  { id:"i06", icon:"🍵", name:"お茶のミックスボックス",    price:1620, cat:"のみもの" },
+  { id:"i07", icon:"💐", name:"一輪の花＋メッセージ",      price:1490, cat:"はな" },
+  { id:"i08", icon:"🧁", name:"小さなケーキ 12個入",       price:1080, cat:"おかし" },
+  { id:"i09", icon:"🤲", name:"ハンドクリーム",            price:2200, cat:"コスメ" },
+  { id:"i10", icon:"🥢", name:"箸置き 5枚セット",          price:2200, cat:"くらし" },
+  { id:"i11", icon:"🍜", name:"うどんの詰め合わせ",        price:2160, cat:"たべもの" },
+  { id:"i12", icon:"🪷", name:"お香（ホワイトセージ）",    price:1430, cat:"リラックス" },
+  { id:"i13", icon:"🍓", name:"季節のフルーツゼリー",      price:2160, cat:"おかし" },
+  { id:"i14", icon:"🧼", name:"ハンドソープ",              price:1650, cat:"くらし" },
+  { id:"i15", icon:"🫖", name:"ティーバッグのギフト",      price:1080, cat:"のみもの" },
+  { id:"i16", icon:"🎫", name:"近くのカフェの体験チケット", price:3000, cat:"たいけん" },
+  { id:"i17", icon:"📓", name:"小さなノート",              price:1200, cat:"こもの" },
+  { id:"i18", icon:"🍫", name:"チョコレートの箱",          price:1100, cat:"おかし" }
+];
+const GI = id => GIFTS.find(g => g.id === id);
+
+/* ===== データ構造 ====================================================
+   gift  : 1件の贈りもの（気持ち intent ＋ 答え合わせ reply が同居）
+   ask   : 1回の「好み聞き」（◯×で返ってくる）
+   prefs : 相手ごとの好みの地図（◯×が積まれる）
+   =================================================================== */
+const EMPTY = { user:null, friends:[], gifts:[], asks:[], draft:null, session:{ in:false } };
+
+function seed(name){
+  return {
+    user:{ id:"u1", name:name || "わたし" },
+    friends:[
+      { id:"f1", name:"ミナ",   color:"#E0614A", rel:"高校の友人", bd:"11-08" },
+      { id:"f2", name:"ハルキ", color:"#3E7A58", rel:"大学の友人", bd:"02-14" },
+      { id:"f3", name:"ユイ",   color:"#7B5EA7", rel:"バイト先",   bd:"06-30" }
+    ],
+    gifts:[{
+      id:"g1", toId:"f1", sentAt:"2025-10-22",
+      intent:{ emotion:"thanks", hope:"また会いたいと思ってほしい" },
+      message:"去年の文化祭、ほんとに助かった。ずっと言えてなかったけど、ありがとう。",
+      gift:{ id:"i01", icon:"☕", name:"ドリップコーヒー 6袋", price:1620 },
+      reply:{ used:"u", comment:"毎朝これ飲んでる。また行こうね", at:"2025-10-23" }
+    }],
+    asks:[{
+      id:"a1", toId:"f1", createdAt:"2025-10-20",
+      items:["i01","i03","i05","i08"],
+      answers:{ i01:"y", i03:"y", i05:"n", i08:"m" }, done:true
+    }],
+    draft:null, session:{ in:true }
+  };
+}
+
+/* ===== 保存 ========================================================= */
+let S = load(), cur = "login";
+function load(){
+  try{ const r = localStorage.getItem(CFG.key); return r ? JSON.parse(r) : structuredClone(EMPTY); }
+  catch(e){ return structuredClone(EMPTY); }
+}
+function save(){ try{ localStorage.setItem(CFG.key, JSON.stringify(S)); }catch(e){} }
+function wipe(){ localStorage.removeItem(CFG.key); S = structuredClone(EMPTY); go("login"); }
+
+function go(s){ cur = s; draw(); window.scrollTo(0,0); }
+function draw(){
+  document.getElementById("app").innerHTML = (V[cur] ? V[cur]() : V.home()) + bar();
+  document.querySelectorAll("[data-a]").forEach(el =>
+    el.addEventListener("click", () => act(el.dataset)));
+  const f = document.querySelector("[data-focus]"); if(f) f.focus();
+}
+
+/* ===== 小道具 ======================================================= */
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function yen(n){ return "¥" + Number(n).toLocaleString("ja-JP"); }
+function friend(id){ return S.friends.find(f => f.id === id) || { name:"？", color:"#999" }; }
+function giftsTo(id){ return S.gifts.filter(g => g.toId === id).sort((a,b)=>b.sentAt.localeCompare(a.sentAt)); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function pack(o){ return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/,""); }
+function unpack(s){ try{ return JSON.parse(decodeURIComponent(escape(atob(s)))); }catch(e){ return null; } }
+
+/* 相手ごとの「好みの地図」を作る（◯×の積み重ね） */
+function prefsOf(fid){
+  const map = {};
+  S.asks.filter(a => a.toId === fid && a.answers).forEach(a => {
+    Object.keys(a.answers).forEach(k => { map[k] = a.answers[k]; });
+  });
+  return map;
+}
+/* かぶり判定：過去に贈ったことがあるか */
+function alreadySent(fid, gid){ return S.gifts.some(g => g.toId === fid && g.gift.id === gid); }
+
+/* ★候補の出し方（アンケートの結果を反映）
+   1. 相手が ◯ をつけたものを最優先
+   2. × をつけたものは出さない
+   3. 過去に贈ったものは「かぶり」として印をつけ、後ろに回す     */
+function suggest(fid, n){
+  const p = prefsOf(fid);
+  const scored = GIFTS
+    .filter(g => p[g.id] !== "n")
+    .map(g => ({ g, s: (p[g.id]==="y" ? 3 : p[g.id]==="m" ? 1 : 2) - (alreadySent(fid,g.id) ? 2 : 0) }))
+    .sort((a,b) => b.s - a.s);
+  return scored.slice(0, n || 3).map(x => x.g);
+}
+
+/* ○年前の今日 */
+function onThisDay(){
+  const md = today().slice(5);
+  return S.gifts.filter(g => g.sentAt.slice(5) === md && g.sentAt.slice(0,4) !== today().slice(0,4));
+}
+function yearsAgo(d){ return Number(today().slice(0,4)) - Number(d.slice(0,4)); }
+
+/* 循環図 */
+const LOOP = ["きもち","贈る","届く","返る","残る"];
+function loopSVG(active, size){
+  const sz = size || 240, C=120, RN=76, RT=102, pts=[];
+  for(let i=0;i<5;i++){
+    const a = (-90 + i*72) * Math.PI/180;
+    pts.push({ nx:C+RN*Math.cos(a), ny:C+RN*Math.sin(a), tx:C+RT*Math.cos(a), ty:C+RT*Math.sin(a)+4 });
+  }
+  return `<div class="loop"><svg width="${sz}" height="${sz}" viewBox="0 0 240 240">
+    <circle class="trk" cx="120" cy="120" r="76"></circle>
+    <circle class="arc" cx="120" cy="120" r="76" transform="rotate(-90 120 120)"></circle>
+    <polygon points="120,35 129,44 120,53" fill="#E0614A"></polygon>
+    ${pts.map((p,i)=>`<circle class="nd ${i===active?"on":""}" cx="${p.nx.toFixed(1)}" cy="${p.ny.toFixed(1)}" r="7"></circle>`).join("")}
+    ${pts.map((p,i)=>`<text class="tx ${i===active?"on":""}" x="${p.tx.toFixed(1)}" y="${p.ty.toFixed(1)}" text-anchor="middle">${LOOP[i]}</text>`).join("")}
+    <text class="ctr" x="120" y="115" text-anchor="middle">KIMOCHI</text>
+    <text class="ctr" x="120" y="131" text-anchor="middle">LOOP</text>
+  </svg></div>`;
+}
+const USED = { u:"使ってる", s:"まだ使ってない", y:"もう無くなった" };
+const USEDC = { u:"u", s:"s", y:"y" };
+
+/* ===== 画面 ========================================================= */
+const V = {
+
+login(){ return `
+<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;padding-bottom:40px">
+  <h1 style="text-align:center">${CFG.name}<span class="sub" style="display:inline;font-size:12px"> （仮）</span></h1>
+  <p class="sub" style="text-align:center">贈る前に、<b style="color:var(--accent)">相手の本音</b>を知る。<br>贈ったあと、<b style="color:var(--accent)">どうだったか</b>が返ってくる。</p>
+  ${loopSVG(-1, 228)}
+  <div class="stack m24">
+    <div class="fld"><label class="jlab">あなたの名前（ニックネームでOK）</label>
+      <input id="nm" data-focus placeholder="たとえば：つばさ" autocomplete="off"></div>
+    <button class="btn" data-a="login">はじめる</button>
+    <button class="btn g" data-a="demo">見本データで試す（デモ用）</button>
+  </div>
+  <p class="sub" style="font-size:11px;text-align:center">※プロトタイプです。入力はこの端末の中だけに保存されます。</p>
+</div>`},
+
+/* --- ホーム --- */
+home(){
+  const ago = onThisDay();
+  const newAns = S.asks.filter(a => a.done && !a.seen);
+  return `
+<div class="scr">
+  <p class="jlab">こんにちは、${esc(S.user?S.user.name:"")}さん</p>
+  <h1 style="margin-top:3px">だれに贈りますか？</h1>
+  ${newAns.length ? `<div class="card ok m16" data-a="ans" data-id="${newAns[0].id}" style="cursor:pointer">
+    <p class="jlab" style="color:var(--ok)">✉ 好みの返事がとどいています</p>
+    <p style="font-size:15px;margin-top:5px"><b>${esc(friend(newAns[0].toId).name)}さん</b>が ◯× で答えてくれました</p>
+    <p class="sub" style="margin-top:3px;font-size:12.5px">タップして結果を見る →</p></div>` : ""}
+  <div class="card m16">${S.friends.map(f=>{
+    const l = giftsTo(f.id)[0], p = prefsOf(f.id);
+    const ny = Object.values(p).filter(v=>v==="y").length;
+    const nt = l ? `${l.sentAt.slice(5).replace("-","/")}　${esc(l.gift.name)}${l.reply?"　✓返事あり":""}`
+                 : (ny ? `好みを ${ny} 件 知っています` : "まだ何も知りません");
+    return `<div class="row" data-a="pick" data-id="${f.id}">
+      <div class="av" style="background:${f.color}">${esc(f.name.slice(0,1))}</div>
+      <div class="m"><div class="nm">${esc(f.name)}</div><div class="nt">${nt}</div></div>
+      <div style="color:#DCCFC4;font-size:21px">›</div></div>`}).join("")}</div>
+  ${ago.length ? ago.slice(0,1).map(g=>`<div class="ago">
+      <p class="y">⟳ ${yearsAgo(g.sentAt)}年前の今日</p>
+      <p style="font-size:15px;margin-top:6px"><b>${esc(friend(g.toId).name)}さん</b>に
+        ${EM(g.intent.emotion).icon} <b>${EM(g.intent.emotion).label}</b> の気持ちで<br>
+        「${esc(g.gift.name)}」を贈りました。</p>
+      ${g.reply&&g.reply.comment?`<p style="font-size:14px;margin-top:9px;padding:11px;background:rgba(255,255,255,.75);border-radius:12px">「${esc(g.reply.comment)}」</p>`:""}
+      <p class="sub" style="font-size:11.5px;margin-top:8px">※写真はありません。<b>記録と、相手の言葉だけで残しています。</b></p>
+    </div>`).join("") : ""}
+  <button class="btn s m16" data-a="talk">🤖 ギフトーク AI に聞く</button>
+  <button class="btn s" style="margin-top:10px" data-a="note">📒 2人のノートを見る</button>
+  <button class="btn g" data-a="logout">ログアウト</button>
+</div>`},
+
+/* --- 相手を選んだあとの分かれ道 --- */
+pick(){
+  const f = friend(S.draft.toId), p = prefsOf(f.id);
+  const ny = Object.values(p).filter(v=>v==="y").length;
+  const nn = Object.values(p).filter(v=>v==="n").length;
+  return `
+<div class="scr">
+  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
+  <div style="display:flex;align-items:center;gap:13px;margin-top:4px">
+    <div class="av" style="background:${f.color};width:52px;height:52px;flex:0 0 52px;font-size:19px">${esc(f.name.slice(0,1))}</div>
+    <div><h1 style="font-size:21px">${esc(f.name)}さん</h1>
+    <p class="sub" style="margin:0;font-size:12.5px">${esc(f.rel||"")}</p></div>
+  </div>
+  ${ny||nn ? `<div class="card m16">
+    <p class="jlab">わかっている好み</p>
+    <div class="map">
+      ${Object.keys(p).filter(k=>p[k]==="y").map(k=>`<span class="tag">◯ ${esc(GI(k)?GI(k).cat:"")}</span>`).join("")}
+      ${Object.keys(p).filter(k=>p[k]==="n").map(k=>`<span class="tag x">${esc(GI(k)?GI(k).cat:"")}</span>`).join("")}
+    </div></div>` : ""}
+  <div class="m16">
+    <div class="pick main" data-a="toAsk">
+      <span class="em">🙆</span>
+      <div><b>まず、好みを聞く</b>
+      <span>候補を ◯× で選んでもらう。<br><b>何を贈るつもりかは、相手に分かりません</b></span></div>
+    </div>
+    <div class="pick" data-a="toItems">
+      <span class="em">🎁</span>
+      <div><b>そのまま贈る</b>
+      <span>${ny?`◯がついた ${ny} 件を優先して候補を出します`:"候補を3つ出します"}</span></div>
+    </div>
+    <div class="pick" data-a="talk">
+      <span class="em">🤖</span>
+      <div><b>AIに相談する</b>
+      <span>相手の趣味を自分が知らないときに。<br>ジャンルの解説も、マナーも聞けます</span></div>
+    </div>
+  </div>
+  <p class="sub" style="font-size:12px">💡 アンケートで、<b>29人中0人しか「好みじゃなかった」と正直に言いませんでした。</b>
+  贈る前なら、まだ誰も傷つかないので、本音が言えます。</p>
+</div>`},
+
+/* --- ★好み聞きを作る（贈る人） --- */
+ask(){
+  const d = S.draft, f = friend(d.toId);
+  const sel = d.askItems || [];
+  const p = prefsOf(f.id);
+  const pool = GIFTS.filter(g => p[g.id] === undefined);
+  const list = (pool.length >= 6 ? pool : GIFTS);
+  return `
+<div class="scr">
+  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="backPick">‹ もどる</button>
+  <p class="jlab">好みを聞く</p>
+  <h1 style="margin-top:3px">候補を選んでください</h1>
+  <p class="sub">選んだものを <b>${esc(f.name)}さん</b>が ◯× で答えます。<br>
+  <b style="color:var(--accent)">この中から贈るとは伝わりません。</b>「好みを教えて」とだけ届きます。</p>
+  <p class="jlab m16">${sel.length} 件えらび中（4〜8件がおすすめ）</p>
+  <div class="m12">${list.slice(0,10).map(g=>`
+    <div class="item ${sel.includes(g.id)?"on":""}" data-a="selA" data-id="${g.id}">
+      <div class="ic">${g.icon}</div>
+      <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${esc(g.cat)}</div></div>
+      <div style="color:${sel.includes(g.id)?"var(--accent)":"#DCCFC4"};font-size:18px">${sel.includes(g.id)?"✓":"○"}</div>
+    </div>`).join("")}</div>
+  <button class="btn m16" data-a="mkAsk" ${sel.length>=3?"":"disabled"}>この ${sel.length} 件で聞く</button>
+</div>`},
+
+/* --- 好み聞きのURLができた --- */
+asklink(){
+  const a = S.asks.find(x => x.id === S.draft.askId);
+  const f = friend(a.toId);
+  const url = location.origin + location.pathname + "?p=" + pack({ id:a.id, s:S.user.name, items:a.items });
+  return `
+<div class="scr">
+  <p class="jlab">好みを聞く</p>
+  <h1 style="margin-top:3px">このリンクを送ってください</h1>
+  <p class="sub"><b>${esc(f.name)}さん</b>は、${a.items.length}件に ◯× を押すだけ。<b>30秒で終わります。</b></p>
+  <div class="card m16" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">相手に見える文</p>
+    <p style="font-size:14.5px;margin-top:7px">「${esc(S.user.name)}さんから<br>
+    『ちょっと好みを教えて』が届きました」</p>
+    <p class="sub" style="font-size:11.5px;margin-top:8px">※ギフトのことは、ひとことも書いていません</p>
+  </div>
+  <p class="jlab m16">送るリンク</p>
+  <div class="url">${esc(url)}</div>
+  <button class="btn m16" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
+  <button class="btn o" data-a="openr" data-v="${esc(url)}">▶ 相手の画面を見る（デモ用）</button>
+  <button class="btn g" data-a="home">ホームへ</button>
+</div>`},
+
+/* --- ★相手が◯×で答える（ログイン不要） --- */
+pans(){
+  const q = S.pbox; if(!q) return V.home();
+  const ans = S.pans || {};
+  const done = q.items.filter(i => ans[i]).length;
+  return `
+<div class="scr">
+  <div class="prog"><i style="width:${Math.round(done/q.items.length*100)}%"></i></div>
+  <p class="jlab">${esc(q.s)}さんから</p>
+  <h1 style="margin-top:3px">ちょっと好みを<br>教えてください</h1>
+  <p class="sub">${q.items.length}件に ◯ か × を押すだけ。<b>30秒で終わります。</b><br>
+  正直に答えてもらえるほど、助かります。</p>
+  <div class="m16">${q.items.map(id=>{
+    const g = GI(id); if(!g) return "";
+    const v = ans[id];
+    return `<div class="pf ${v==="y"?"yes":v==="n"?"no":v==="m"?"may":""}">
+      <div class="ic">${g.icon}</div>
+      <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${esc(g.cat)}</div></div>
+      <div class="ox">
+        <button data-a="pa" data-id="${id}" data-v="y" class="${v==="y"?"on":""}">◯</button>
+        <button data-a="pa" data-id="${id}" data-v="m" class="${v==="m"?"on":""}">△</button>
+        <button data-a="pa" data-id="${id}" data-v="n" class="${v==="n"?"on":""}">×</button>
+      </div></div>`}).join("")}</div>
+  <p class="sub" style="font-size:11.5px">◯＝好き　△＝どちらでも　×＝苦手</p>
+  <button class="btn m16" data-a="psend" ${done===q.items.length?"":"disabled"}>
+    ${done===q.items.length?"送る":`あと ${q.items.length-done} 件`}</button>
+</div>`},
+
+psent(){ return `
+<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
+  <div style="font-size:56px">🙆</div>
+  <h1 class="m16">ありがとうございます</h1>
+  <p class="sub">答えてくれた内容は、<b>相手に届きます。</b><br>
+  何に使われるかは、お楽しみに。</p>
+  <button class="btn m24" data-a="home">自分も使ってみる</button>
+</div>`},
+
+/* --- 好みの結果を見る（贈る人） --- */
+ansview(){
+  const a = S.asks.find(x => x.id === S.draft.askId); if(!a) return V.home();
+  const f = friend(a.toId);
+  const ys = a.items.filter(i => a.answers[i] === "y");
+  const ms = a.items.filter(i => a.answers[i] === "m");
+  const ns = a.items.filter(i => a.answers[i] === "n");
+  return `
+<div class="scr">
+  <p class="jlab">✉ ${esc(f.name)}さんの返事</p>
+  <h1 style="margin-top:3px">本音が返ってきました</h1>
+  <div class="sum">
+    <div><b style="color:var(--ok)">${ys.length}</b><span>◯ 好き</span></div>
+    <div><b>${ms.length}</b><span>△ どちらでも</span></div>
+    <div><b style="color:var(--no)">${ns.length}</b><span>× 苦手</span></div>
+  </div>
+  ${ys.length?`<p class="jlab m16">◯ がついたもの</p>
+  <div class="m12">${ys.map(id=>{const g=GI(id);return `
+    <div class="item" data-a="gpick" data-id="${id}">
+      <div class="ic">${g.icon}</div>
+      <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div></div>
+      <div style="color:var(--ok);font-size:17px;font-weight:800">◯</div></div>`}).join("")}</div>`:""}
+  ${ns.length?`<div class="card m16" style="background:#FAF7F4;border-color:transparent">
+    <p class="jlab">× だったもの（もう出しません）</p>
+    <div class="map">${ns.map(id=>`<span class="tag x">${esc(GI(id).name)}</span>`).join("")}</div>
+    <p class="sub" style="font-size:11.5px;margin-top:9px"><b>これが一番の収穫です。</b>
+    贈ってからでは、絶対に教えてもらえませんでした。</p></div>`:""}
+  <button class="btn m16" data-a="toItems">このまま贈るものを決める</button>
+  <button class="btn g" data-a="home">ホームへ</button>
+</div>`},
+
+/* --- ③ ギフトを決める（◯優先・×除外・かぶり印） --- */
+items(){
+  const d = S.draft, f = friend(d.toId), p = prefsOf(f.id);
+  const three = suggest(f.id, 3);
+  return `
+<div class="scr">
+  <div class="steps"><i class="on"></i><i></i><i></i></div>
+  <p class="jlab">① 贈るものを決める</p>
+  <h1 style="margin-top:3px">3つだけ出しました</h1>
+  <p class="sub">たくさん並べません。<b>迷わせないことが、このアプリの役目です。</b></p>
+  <div class="m16">${three.map(g=>{
+    const pv = p[g.id], dup = alreadySent(f.id, g.id);
+    return `<div class="item ${d.giftId===g.id?"on":""} ${dup?"dup":""}" data-a="gi" data-id="${g.id}">
+      <div class="ic">${g.icon}</div>
+      <div class="m"><div class="nm">${esc(g.name)}${pv==="y"?`<span class="badge">◯ 好きと答えた</span>`:""}${dup?`<span class="badge w">前に贈った</span>`:""}</div>
+      <div class="pr">${yen(g.price)}</div></div>
+      <div style="color:${d.giftId===g.id?"var(--accent)":"#DCCFC4"};font-size:18px">${d.giftId===g.id?"✓":"○"}</div>
+    </div>`}).join("")}</div>
+  <div class="card" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">この3つが出た理由</p>
+    <p style="font-size:13px;margin-top:6px">
+      ・${esc(f.name)}さんが <b>×</b> をつけたものは外しました<br>
+      ・<b>◯</b> をつけたものを前に出しました<br>
+      ・<b>前に贈ったもの</b>には印をつけ、後ろに回しました</p>
+  </div>
+  <button class="btn m16" data-a="toWord" ${d.giftId?"":"disabled"}>つぎへ</button>
+  <button class="btn g" data-a="backPick">もどる</button>
+</div>`},
+
+/* --- ② ひと言（気持ちは「決めさせず」軽く選ぶ） --- */
+word(){
+  const d = S.draft, f = friend(d.toId), g = GI(d.giftId);
+  return `
+<div class="scr">
+  <div class="steps"><i class="on"></i><i class="on"></i><i></i></div>
+  <p class="jlab">② ひと言そえる</p>
+  <h1 style="margin-top:3px">どんな気持ちで<br>選びましたか？</h1>
+  <p class="sub">タップするだけ。<b>文は自動でできます。</b>そのあと自由に直せます。</p>
+  <div class="chips">${EMOTIONS.filter(e=>!e.honest).map(e=>`
+    <button class="chip ${d.emotion===e.id?"on":""}" data-a="em" data-id="${e.id}">${e.icon} ${e.label}</button>`).join("")}</div>
+  <div class="fold ${d.ho?"open":""}" style="margin-top:12px">
+    <button class="btn g" style="font-size:13px" data-a="fold">${d.ho?"▴":"▾"} 🤫 本音モード</button>
+    ${d.ho?`<div class="chips" style="margin-top:4px">${EMOTIONS.filter(e=>e.honest).map(e=>`
+      <button class="chip ${d.emotion===e.id?"on":""}" data-a="em" data-id="${e.id}">${e.icon} ${e.label}</button>`).join("")}</div>
+      <p class="sub" style="font-size:11.5px">※相手に「気持ちの名前」は見せません</p>`:""}
+  </div>
+  ${d.emotion?`
+  <div class="fld m16"><label class="jlab">相手に届く文（直せます）</label>
+    <textarea id="msg" rows="3">${esc(d.message||"")}</textarea></div>
+  <p class="sub" style="font-size:11.5px">💡 AIは代わりに書きません。<b>たたき台を出すだけです。</b>
+  直したものが、そのままあなたの言葉として届きます。</p>
+  <button class="btn m16" data-a="toSend">贈る準備をする</button>`:""}
+  <button class="btn g" data-a="toItems">もどる</button>
+</div>`},
+
+/* --- ③ 贈る --- */
+send(){
+  const d = S.draft, f = friend(d.toId), g = GI(d.giftId), e = EM(d.emotion);
+  const url = location.origin + location.pathname + "?r=" + pack({
+    s:S.user.name, r:f.name, e:d.emotion, m:d.message,
+    g:{ id:g.id, icon:g.icon, name:g.name, price:g.price }
+  });
+  return `
+<div class="scr">
+  <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+  <p class="jlab">③ 贈る</p>
+  <h1 style="margin-top:3px">このリンクを送れば、<br>${esc(f.name)}さんに届きます。</h1>
+  <p class="sub"><b style="color:var(--accent)">相手はアプリを入れる必要がありません。</b></p>
+  <div class="card m16">
+    <div class="item" style="margin:0;border:0;padding:0;background:transparent">
+      <div class="ic">${g.icon}</div>
+      <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div></div></div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+    <p style="font-size:14.5px;padding:12px;background:#FAF6F2;border-radius:12px">「${esc(d.message)}」</p>
+  </div>
+  <div class="url m16">${esc(url)}</div>
+  <button class="btn m16" data-a="copy" data-v="${esc(url)}">🔗 リンクをコピーする</button>
+  <button class="btn o" data-a="openr" data-v="${esc(url)}">▶ 受け取る側の画面を見る（デモ用）</button>
+  <button class="btn g" data-a="finish">贈った記録を残して、ホームへ</button>
+</div>`},
+
+/* --- 受け取る --- */
+recv(){
+  const p = S.inbox; if(!p) return V.home();
+  if(!S.opened) return `
+<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh">
+  <div class="hero">
+    <p style="font-size:13.5px;opacity:.9">${esc(p.s)}さんから<br>とどいています</p>
+    <div class="big m16">💌</div>
+    <div class="seal" data-a="open">▸ タップして開く</div>
+  </div>
+  <p class="sub" style="text-align:center;font-size:12px">※このページはアプリなしで開けます</p>
+</div>`;
+  return `
+<div class="scr">
+  <div class="hero">
+    <p style="font-size:13px;opacity:.88">${esc(p.s)}さんから</p>
+    <div class="big m16">${p.g.icon}</div>
+    <h2 style="margin-top:12px">${esc(p.g.name)}</h2>
+    <div class="quote"><p>「${esc(p.m)}」</p></div>
+  </div>
+  <div class="card hl m24">
+    <p class="jlab">⟳ ひとつだけ教えてください</p>
+    <h2 style="margin-top:8px">もう使いましたか？</h2>
+    <p class="sub" style="font-size:12.5px">感想ではなく<b>事実</b>でかまいません。<br>
+    <b>「まだ」も、ちゃんと役に立ちます。</b></p>
+    <div class="m16">
+      <button class="vbtn ${S.rv==="u"?"on":""}" data-a="rv" data-v="u">使ってる<small>もう使いました</small></button>
+      <button class="vbtn ${S.rv==="s"?"on":""}" data-a="rv" data-v="s">まだ使ってない<small>大事にとってあります／これから</small></button>
+      <button class="vbtn ${S.rv==="y"?"on":""}" data-a="rv" data-v="y">もう無くなった<small>食べ切った・使い切りました</small></button>
+    </div>
+    <div class="fld m16"><label class="jlab">ひとこと（任意）</label>
+      <textarea id="cm" rows="2" placeholder="例：毎朝これ飲んでる"></textarea></div>
+    <button class="btn" data-a="reply" ${S.rv?"":"disabled"}>返事を送る</button>
+  </div>
+</div>`},
+
+sent(){ return `
+<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
+  <div style="font-size:56px">💌</div>
+  <h1 class="m16">返事を送りました</h1>
+  <p class="sub">あなたの返事は、<b>贈ってくれた人のノートに残ります。</b><br>
+  同じものを2回もらうことも、これで減っていきます。</p>
+  ${loopSVG(4, 196)}
+  <button class="btn m24" data-a="home">自分も使ってみる</button>
+</div>`},
+
+/* --- ノート --- */
+note(){
+  const list = S.gifts.slice().sort((a,b)=>b.sentAt.localeCompare(a.sentAt));
+  const r = list.filter(g=>g.reply).length;
+  const know = S.friends.reduce((n,f)=>n+Object.keys(prefsOf(f.id)).length,0);
+  return `
+<div class="scr">
+  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
+  <p class="jlab">📒 2人のノート</p>
+  <h1 style="margin-top:3px">贈ったもの →<br>どうだったか</h1>
+  <p class="sub"><b style="color:var(--accent)">写真はありません。記録と、相手の言葉だけです。</b></p>
+  <div class="sum">
+    <div><b>${list.length}</b><span>贈った</span></div>
+    <div><b style="color:var(--accent)">${r}</b><span>返事がきた</span></div>
+    <div><b style="color:var(--ok)">${know}</b><span>知った好み</span></div>
+  </div>
+  ${list.length ? list.map(g=>{
+    const e = EM(g.intent.emotion), f = friend(g.toId);
+    return `<div class="card m16">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="av" style="background:${f.color};width:32px;height:32px;flex:0 0 32px;font-size:13px">${esc(f.name.slice(0,1))}</div>
+        <b>${esc(f.name)}さん</b>
+        <span class="sub" style="margin:0;margin-left:auto;font-size:11.5px">${g.sentAt}</span></div>
+      <div class="stack" style="gap:8px;margin-top:12px">
+        <div>${e.icon} <b>${e.label}</b> ／ <b>${esc(g.gift.name)}</b></div>
+        ${g.reply ? `<div><span class="vd ${USEDC[g.reply.used]}">${USED[g.reply.used]}</span></div>
+          ${g.reply.comment?`<p style="font-size:14px">「${esc(g.reply.comment)}」</p>`:""}`
+        : `<div class="sub" style="margin:0">まだ返事がありません</div>`}
+      </div></div>`}).join("")
+   : `<div class="note m16">まだ記録がありません。</div>`}
+</div>`}
+
+};
+
+/* ===== 開発用バー（発表前に return "" にすれば消えます） ===== */
+function bar(){
+  if(!S.session.in && !["recv","sent","pans","psent"].includes(cur)) return "";
+  const k=[["home","家"],["pick","相手"],["ask","好み聞"],["pans","◯×"],["items","選ぶ"],["send","贈る"],["recv","受"],["note","記録"]];
+  return `<div class="bar"><span class="t">開発</span>${k.map(x=>
+    `<button data-a="jump" data-v="${x[0]}" class="${cur===x[0]?"on":""}">${x[1]}</button>`).join("")}
+    <button data-a="wipe">消</button></div>`;
+}
+
+/* ==================================================================
+   ★ギフトーク AI（拡張版）
+   これまで：ギフトを探す手助けだけ
+   これから：ギフトのことなら何でも聞ける
+
+   ■ 根拠（アンケート自由記述）
+     「相手の趣味を解像度高く解説してくれる機能。
+       自分が興味ないものは全く知らないので」
+
+   ■ ⚠️ いまは本物のAIではありません
+     下の KB（知識）とキーワード一致で答えています。
+     本物のAIにするときは、talkAnswer() の中だけを
+     APIの呼び出しに置きかえてください。画面はそのまま使えます。
+   ================================================================== */
+
+/* チャットの見た目（1回だけ入れる） */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+  .tk{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+  .bb{max-width:86%;padding:13px 15px;border-radius:18px;font-size:14.5px;line-height:1.75;white-space:pre-wrap}
+  .bb.me{align-self:flex-end;background:var(--grad);color:#fff;border-bottom-right-radius:6px}
+  .bb.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line);
+         border-bottom-left-radius:6px;box-shadow:var(--sh)}
+  .bb.ai b{color:var(--accent)}
+  .tk .who{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:-6px}
+  .tk .who.me{align-self:flex-end}
+  .ask{display:flex;gap:8px;margin-top:16px}
+  .ask input{flex:1}
+  .ask button{flex:0 0 54px;border:0;border-radius:14px;background:var(--grad);color:#fff;
+    font-size:17px;font-family:inherit;cursor:pointer}
+  .act{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  .act button{padding:9px 13px;border:1.5px solid var(--accent);border-radius:999px;
+    background:var(--soft);color:var(--accent);font-size:12.5px;font-weight:800;
+    font-family:inherit;cursor:pointer}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ===== 知識（KB）=====================================================
+   k: 反応することば  a: 答え  act: 次にできること
+   ここを増やすほど賢く見えます。本物のAIに替えるまでの土台です。
+   =================================================================== */
+const KB = [
+  { k:["キャンプ","アウトドア","焚き火","登山"],
+    a:"キャンプを始めたばかりの人は、こう分かれます。\n\n<b>・もう持っている可能性が高い</b>\n　テント、火おこし、ランタン（最初に自分で買う）\n<b>・持っていても喜ばれる</b>\n　コーヒー道具、調味料入れ、手ぬぐい（消耗品・何個でも使える）\n<b>・かぶっても困らない</b>\n　シェラカップ、軍手、焚き火用の手袋\n\n<b>迷ったら「何個あっても困らないもの」が安全です。</b>",
+    act:"ask" },
+  { k:["コスメ","化粧","メイク","スキンケア"],
+    a:"コスメは<b>いちばん外しやすいジャンル</b>です。肌に合う合わないがあるからです。\n\n<b>・外しにくい</b>\n　ハンドクリーム、リップ、入浴剤、ヘアオイル\n<b>・外しやすい（避けたほうが安全）</b>\n　ファンデーション、色もの、香りの強いもの\n\n<b>香りは好みが割れます。</b>本人に聞くのがいちばん確実です。",
+    act:"ask" },
+  { k:["ゲーム","switch","ps5","steam","eスポーツ"],
+    a:"ゲーム好きへのギフトは、<b>ソフトを選ばないほうが安全</b>です。もう持っている可能性が高いからです。\n\n<b>・周辺で喜ばれる</b>\n　お菓子・飲み物（長時間やるので）、クッション、ブルーライト眼鏡\n<b>・ギフトカード</b>\n　無難ですが「考えてない」と思われることも\n\n<b>「何を持っているか」は本人にしか分かりません。</b>",
+    act:"ask" },
+  { k:["本","読書","小説","漫画"],
+    a:"本は<b>すでに読んでいる危険</b>があります。\n\n<b>・安全</b>\n　ブックカバー、しおり、読書灯、ブックスタンド\n<b>・危険</b>\n　特定のタイトル（持っている／好みが合わない）\n\n<b>「本そのもの」より「読む時間を良くするもの」</b>がおすすめです。",
+    act:"ask" },
+  { k:["カフェ","コーヒー","珈琲","紅茶","お茶"],
+    a:"コーヒー・お茶は<b>ギフトの優等生</b>です。消えてなくなるので、かぶっても困りません。\n\n<b>・ほぼ外さない</b>\n　ドリップバッグ、ティーバッグの詰め合わせ\n<b>・少し踏み込むなら</b>\n　豆（挽き方の好みがある）、マグカップ（かぶりやすい）\n\n<b>カフェインが苦手な人だけ注意</b>です。デカフェという手もあります。",
+    act:"ask" },
+  { k:["韓国","kpop","アイドル","推し","オタク"],
+    a:"推し活をしている人には、<b>推しそのものより「推し活がしやすくなるもの」</b>が喜ばれます。\n\n<b>・喜ばれる</b>\n　トレカのスリーブ・ファイル、ペンライト用の電池、遠征用の軽いポーチ\n<b>・危険</b>\n　グッズそのもの（もう持っている／推しが違う）\n\n<b>推しを間違えると致命的</b>なので、本人に確認を。",
+    act:"ask" },
+  { k:["料理","自炊","キッチン"],
+    a:"料理好きには<b>「ちょっといい消耗品」</b>が強いです。\n\n<b>・喜ばれる</b>\n　オリーブオイル、塩、スパイス、だし\n<b>・かぶりやすい</b>\n　エプロン、鍋つかみ、お玉\n\n<b>道具はこだわりが強いので、消えるものが安全</b>です。",
+    act:"ask" },
+  { k:["予算","いくら","相場","値段","金額","円"],
+    a:"友人へのギフトは、<b>関係の近さで変わります</b>。\n\n<b>・職場や知り合い</b>　1,000〜2,000円\n<b>・友人</b>　3,000〜5,000円\n<b>・親しい友人・家族</b>　5,000円〜\n\n<b>高すぎると相手が気をつかいます。</b>お返しを考えさせてしまうからです。\n\n※これは一般的な目安です。<b>出典のある数字ではありません。</b>",
+    act:null },
+  { k:["かぶ","同じ","前に","重複","またか"],
+    a:"かぶりは<b>このアプリが得意なところ</b>です。\n\n贈った記録が残っているので、<b>前に贈ったものには印がつきます</b>。候補からも後ろに回ります。\n\nアンケートでも、こんな声がありました。\n<b>「同じもの（マグカップ・ハンカチ・キーホルダー）を貰って使い道に困る」</b>\n\n記録があれば、これは起きません。",
+    act:"note" },
+  { k:["目上","上司","先輩","マナー","のし","失礼"],
+    a:"目上の人へのギフトには、注意点があります。\n\n<b>・避けたほうがよいとされるもの</b>\n　履物（踏みつける意味）、時計・文具（勤勉を促す意味）、現金や金券（生活の援助に見える）\n<b>・無難</b>\n　消えもの（お菓子・お茶・コーヒー）\n\n<b>ただし、いまはそこまで気にしない人も増えています。</b>関係性しだいです。",
+    act:null },
+  { k:["何を","決まらない","わからない","分からない","迷"],
+    a:"決まらないときは、<b>選択肢を減らすのが一番効きます</b>。\n\nアンケートでも、<b>28人中13人が「候補が多すぎて決まらない」</b>と答えていました。\n\n<b>いちばん確実なのは、本人に聞くことです。</b>\nこのアプリなら、<b>何を贈るつもりかを隠したまま</b>、◯× で好みだけ聞けます。",
+    act:"ask" },
+  { k:["嫌","苦手","外し","失敗","喜ばない"],
+    a:"外すのが怖いのは当然です。アンケートでは、<b>29人中0人しか「好みじゃなかった」と正直に言いませんでした</b>。\n\nつまり<b>贈ったあとでは、本当のことは分かりません</b>。\n\n<b>だから、贈る前に聞きます。</b>まだ誰も傷ついていないので、本音が言えます。",
+    act:"ask" },
+  { k:["体験","チケット","カフェ券","食事"],
+    a:"体験ギフトは<b>「会うきっかけ」になる</b>のが強みです。\n\n<b>・向いている</b>\n　しばらく会えていない友人、好みが分からない相手\n<b>・注意</b>\n　遠方の人、忙しい人（使えないと逆に負担）\n\n<b>有効期限と場所を必ず確認</b>してください。",
+    act:null }
+];
+
+function talkAnswer(q){
+  const t = String(q||"");
+  let best = null, bs = 0;
+  KB.forEach(e => {
+    const s = e.k.reduce((n,w) => n + (t.indexOf(w) >= 0 ? w.length : 0), 0);
+    if(s > bs){ bs = s; best = e; }
+  });
+  if(best) return best;
+  /* 商品名で聞かれたとき */
+  const g = GIFTS.find(x => t.indexOf(x.name.slice(0,4)) >= 0 || t.indexOf(x.cat) >= 0);
+  if(g) return { a:`<b>${g.name}</b>（${yen(g.price)}／${g.cat}）\n\nこのアプリでは、相手が ◯ をつけた場合にだけ前に出します。\n\n<b>いちばん確実なのは、本人に ◯× で聞くことです。</b>`, act:"ask" };
+  return { a:"うまく聞き取れませんでした。\n\nこんなふうに聞いてもらえると答えやすいです。\n\n<b>・相手がキャンプ好きなんだけど何も知らない</b>\n<b>・友人へのギフトの予算は？</b>\n<b>・目上の人に贈るときの注意は？</b>\n<b>・かぶらないようにしたい</b>", act:null };
+}
+
+/* ===== 画面：ギフトーク ============================================= */
+V.talk = function(){
+  const log = S.talk || [];
+  const tips = ["相手がキャンプ好きなんだけど何も知らない","友人へのギフトの予算は？",
+                "コスメって外しやすい？","目上の人に贈るときの注意は？","かぶらないようにしたい"];
+  return `
+<div class="scr">
+  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
+  <p class="jlab">🤖 ギフトーク AI</p>
+  <h1 style="margin-top:3px">ギフトのことなら<br>何でも聞いてください</h1>
+  <p class="sub">商品のことも、相手の趣味のことも、マナーも。<br>
+  <b style="color:var(--accent)">「自分が知らないジャンル」こそ聞いてください。</b></p>
+  ${log.length ? `<div class="tk">${log.map(m => m.r === "me"
+      ? `<div class="who me">あなた</div><div class="bb me">${esc(m.t)}</div>`
+      : `<div class="who">ギフトーク AI</div><div class="bb ai">${m.t}</div>
+         ${m.act === "ask" ? `<div class="act"><button data-a="fromTalkAsk">🙆 本人に ◯× で聞いてみる</button></div>` : ""}
+         ${m.act === "note" ? `<div class="act"><button data-a="note">📒 ノートを見る</button></div>` : ""}`
+    ).join("")}</div>`
+  : `<div class="card m16" style="background:var(--grad-soft);border-color:transparent">
+      <p class="jlab">こんなことが聞けます</p>
+      <div class="chips">${tips.map(t=>`<button class="chip" data-a="tq" data-v="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+    </div>`}
+  <div class="ask">
+    <input id="tq" data-focus placeholder="聞きたいことを入力" autocomplete="off">
+    <button data-a="tsend">▸</button>
+  </div>
+  ${log.length ? `<div class="chips" style="margin-top:14px">${tips.slice(0,3).map(t=>`
+    <button class="chip" data-a="tq" data-v="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+    <button class="btn g m16" data-a="tclear">会話を消す</button>` : ""}
+  <p class="sub" style="font-size:11px;margin-top:18px">⚠️ これはプロトタイプです。本物のAIにつないでいません。
+  用意した知識から答えています。<b>本物にするときは talkAnswer() だけを差しかえます。</b></p>
+</div>`;
+};
+
+/* ===== 操作 ========================================================= */
+function act(d){
+  const D = S.draft;
+  switch(d.a){
+    case "login": {
+      const n=(document.getElementById("nm").value||"").trim();
+      if(!n){ alert("名前を入れてください"); return; }
+      S=seed(n); save(); go("home"); break;      /* ★本物の認証はこの行を差しかえ */
+    }
+    case "demo":   S=seed("つばさ"); save(); go("home"); break;
+    case "logout": S.session.in=false; save(); go("login"); break;
+    case "home":   S.draft=null; save(); go("home"); break;
+    case "note":   go("note"); break;
+    case "jump":   go(d.v); break;
+    case "wipe":   if(confirm("保存したデータを消して最初からにしますか？")) wipe(); break;
+
+    /* 相手を選ぶ */
+    case "pick": S.draft={ toId:d.id, askItems:[], giftId:null, emotion:null, message:"", ho:false };
+                 save(); go("pick"); break;
+    case "backPick": go("pick"); break;
+
+    /* ★好みを聞く（作る） */
+    case "toAsk": go("ask"); break;
+    case "selA": {
+      const a = D.askItems || [];
+      D.askItems = a.includes(d.id) ? a.filter(x=>x!==d.id) : a.concat([d.id]);
+      save(); go("ask"); break;
+    }
+    case "mkAsk": {
+      const id = "a"+Date.now();
+      S.asks.unshift({ id, toId:D.toId, createdAt:today(), items:D.askItems.slice(), answers:null, done:false, seen:false });
+      D.askId = id; save(); go("asklink"); break;
+    }
+
+    /* ★好みに答える（相手・ログイン不要） */
+    case "pa": { S.pans = S.pans || {}; S.pans[d.id] = d.v; save(); go("pans"); break; }
+    case "psend": {
+      /* デモ用：同じ端末にある「返事待ちの好み聞き」に書き込む
+         本番はサーバー経由で、贈った人のノートに届きます */
+      const t = S.asks.find(x => x.id === (S.pbox && S.pbox.id)) || S.asks.find(x => !x.done);
+      if(t){ t.answers = Object.assign({}, S.pans); t.done = true; t.seen = false; }
+      S.pans = null; save(); go("psent"); break;
+    }
+
+    /* 好みの結果を見る */
+    case "ans": {
+      const a = S.asks.find(x=>x.id===d.id); if(!a) break;
+      a.seen = true;
+      S.draft = { toId:a.toId, askId:a.id, askItems:[], giftId:null, emotion:null, message:"", ho:false };
+      save(); go("ansview"); break;
+    }
+    case "gpick": D.giftId = d.id; save(); go("word"); break;
+
+    /* ★ギフトーク AI */
+    case "talk": go("talk"); break;
+    case "tq":   talkSend(d.v); break;
+    case "tsend": {
+      const el = document.getElementById("tq");
+      const q = (el && el.value || "").trim();
+      if(!q) return;
+      talkSend(q); break;
+    }
+    case "tclear": S.talk = []; save(); go("talk"); break;
+    case "fromTalkAsk": {
+      if(S.draft && S.draft.toId){ go("ask"); }
+      else { alert("まず、だれに贈るかを選んでください。"); go("home"); }
+      break;
+    }
+
+    /* 贈る */
+    case "toItems": go("items"); break;
+    case "gi":   D.giftId = d.id; save(); go("items"); break;
+    case "toWord": go("word"); break;
+    case "fold": D.ho = !D.ho; save(); go("word"); break;
+    case "em": {
+      const el = document.getElementById("msg");
+      if(el && D.emotion) D.message = el.value;
+      D.emotion = d.id;
+      D.message = compose(D);
+      save(); go("word"); break;
+    }
+    case "toSend": {
+      const el = document.getElementById("msg");
+      if(el) D.message = el.value;
+      save(); go("send"); break;
+    }
+    case "copy":
+      navigator.clipboard.writeText(d.v)
+        .then(()=>alert("リンクをコピーしました。LINEなどで送ってください。"))
+        .catch(()=>alert("コピーできませんでした。画面のリンクを選んでコピーしてください。"));
+      break;
+    case "openr": location.href = d.v; break;
+    case "finish": {
+      const g = GI(D.giftId);
+      S.gifts.unshift({ id:"g"+Date.now(), toId:D.toId, sentAt:today(),
+        intent:{ emotion:D.emotion, hope:"" }, message:D.message,
+        gift:{ id:g.id, icon:g.icon, name:g.name, price:g.price }, reply:null });
+      S.draft=null; save(); go("home"); break;
+    }
+
+    /* 受け取る側 */
+    case "open": S.opened = true; save(); go("recv"); break;
+    case "rv":   S.rv = d.v; save(); go("recv"); break;
+    case "reply": {
+      const cm = (document.getElementById("cm")||{}).value || "";
+      const t = S.gifts.find(x => !x.reply);
+      if(t){ t.reply = { used:S.rv, comment:cm, at:today() }; }
+      S.rv=null; S.opened=false; save(); go("sent"); break;
+    }
+  }
+}
+
+/* AIに聞く（1往復） */
+function talkSend(q){
+  S.talk = S.talk || [];
+  S.talk.push({ r:"me", t:q });
+  const r = talkAnswer(q);
+  S.talk.push({ r:"ai", t:r.a, act:r.act });
+  save(); go("talk");
+  setTimeout(()=>window.scrollTo(0, document.body.scrollHeight), 60);
+}
+
+/* ===== ひと言のたたき台を作る =========================================
+   ⚠️ AIが代筆するのではありません。たたき台を出すだけ。
+      本人が直すので、最終的な言葉は本人のものになります。
+      本物のAIにするなら、この関数の中だけを置きかえてください。
+   =================================================================== */
+function compose(d){
+  const e = EM(d.emotion), g = GI(d.giftId);
+  const tail = g ? `\n${g.name}、よかったら使ってね。` : "";
+  return e.t + tail;
+}
+
+/* ===== 起動 ========================================================= */
+(function boot(){
+  const q = new URLSearchParams(location.search);
+  const r = q.get("r"), p = q.get("p");
+  if(r){ const o = unpack(r); if(o){ S.inbox=o; S.opened=false; cur="recv"; draw(); return; } }
+  if(p){ const o = unpack(p); if(o){ S.pbox=o; S.pans=S.pans||{}; cur="pans"; draw(); return; } }
+  cur = S.session.in ? "home" : "login";
+  draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# 作業用ファイル
+_build/
+_work/
+*.tmp
+*.bak
+
+# 個人情報・調査データは絶対に上げない
+_アンケートデータ/
+*.csv
+*.csv.zip
+
+# OS
+Thumbs.db
+.DS_Store
