@@ -1997,6 +1997,465 @@ draw = function(){
   Object.defineProperty(window, "HONEST_ON", { get(){ return S.showHonest !== false; } });
 })();
 
+/* ==================================================================
+   Supabase 接続レイヤー（3〜4人で試すために必要）
+   ------------------------------------------------------------------
+   ■ 何のためか
+     いまのアプリは、データがその端末の中にしかありません。
+     別の人の端末から「◯×の答え」「もう使った？の返事」を受け取るには、
+     サーバー（Supabase）が要ります。
+
+   ■ 設計の方針
+     ・いままでの localStorage の作りは壊しません
+     ・「相手とやりとりする部分だけ」をSupabaseに通します
+     ・鍵が設定されていなければ、今までどおり端末の中だけで動きます
+       → 発表当日にネットが不調でも、デモが止まりません
+
+   ■ 認証
+     匿名ログイン（Anonymous Sign-in）を使います。
+     ボタンを押す必要がなく、端末ごとにアカウントが自動でできます。
+     あとから Google ログインに差しかえられます。
+   ================================================================== */
+
+/* ▼ ここに Supabase の情報を入れます（anonキーは公開前提なので安全です） */
+const SB_CFG = {
+  url: "https://zvhrnkournupunqlaxsy.supabase.co",
+  key: ""   /* ★ anon public キーをここに貼ると、サーバー連携が有効になります */
+};
+
+let sb = null;          /* Supabaseクライアント */
+let sbReady = false;    /* つながっているか */
+
+/* Supabaseが使えるかどうか。使えなければ今までどおり端末内で動きます */
+function sbOn(){ return sbReady && sb; }
+
+/* ライブラリを読み込む */
+function sbLoad(){
+  return new Promise((ok) => {
+    if(!SB_CFG.key){ ok(false); return; }
+    if(window.supabase){ ok(true); return; }
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";
+    s.onload  = () => ok(true);
+    s.onerror = () => ok(false);
+    document.head.appendChild(s);
+  });
+}
+
+/* つなぐ＋匿名ログイン */
+async function sbInit(){
+  const okLib = await sbLoad();
+  if(!okLib || !window.supabase) return false;
+  try{
+    sb = window.supabase.createClient(SB_CFG.url, SB_CFG.key);
+    let { data } = await sb.auth.getSession();
+    if(!data || !data.session){
+      const r = await sb.auth.signInAnonymously();
+      if(r.error){ console.warn("匿名ログインに失敗:", r.error.message); return false; }
+    }
+    sbReady = true;
+    return true;
+  }catch(e){ console.warn("Supabase接続に失敗:", e); return false; }
+}
+
+/* いまのユーザーID */
+async function sbUid(){
+  if(!sbOn()) return null;
+  const { data } = await sb.auth.getUser();
+  return data && data.user ? data.user.id : null;
+}
+
+/* ===== 贈る側：好み聞きをサーバーに作る ============================= */
+async function sbCreateAsk(friendName, items){
+  if(!sbOn()) return null;
+  const uid = await sbUid(); if(!uid) return null;
+  const { data, error } = await sb.from("asks")
+    .insert({ owner: uid, items: items })
+    .select("id, token").single();
+  if(error){ console.warn("asks作成に失敗:", error.message); return null; }
+  return data;   /* { id, token } */
+}
+
+/* ===== 受け取る側：好み聞きを開く（ログイン不要） =================== */
+async function sbOpenAsk(token){
+  if(!sbOn()) return null;
+  const { data, error } = await sb.rpc("open_ask", { p_token: token });
+  if(error){ console.warn("open_askに失敗:", error.message); return null; }
+  return (data && data[0]) || null;   /* { sender_name, items, already } */
+}
+
+/* ===== 受け取る側：◯×の答えを送る ================================= */
+async function sbAnswerAsk(token, answers){
+  if(!sbOn()) return false;
+  const { data, error } = await sb.rpc("answer_ask", { p_token: token, p_answers: answers });
+  if(error){ console.warn("answer_askに失敗:", error.message); return false; }
+  return !!data;
+}
+
+/* ===== 贈る側：返ってきた答えを取りにいく ========================== */
+async function sbFetchAsks(){
+  if(!sbOn()) return [];
+  const uid = await sbUid(); if(!uid) return [];
+  const { data, error } = await sb.from("asks")
+    .select("id, token, items, answered_at, seen, created_at")
+    .eq("owner", uid).order("created_at", { ascending:false });
+  if(error){ console.warn("asks取得に失敗:", error.message); return []; }
+  const done = (data||[]).filter(a => a.answered_at);
+  if(!done.length) return data || [];
+  const ids = done.map(a => a.id);
+  const { data: ans } = await sb.from("ask_answers").select("ask_id, item_id, answer").in("ask_id", ids);
+  const byAsk = {};
+  (ans||[]).forEach(r => { (byAsk[r.ask_id] = byAsk[r.ask_id] || {})[r.item_id] = r.answer; });
+  (data||[]).forEach(a => { a.answers = byAsk[a.id] || null; });
+  return data || [];
+}
+
+/* ===== 贈る側：ギフトをサーバーに登録する ========================== */
+async function sbCreateGift(o){
+  if(!sbOn()) return null;
+  const uid = await sbUid(); if(!uid) return null;
+  const { data, error } = await sb.from("gifts").insert({
+    owner: uid,
+    recipient_name: o.rname || "",
+    emotion:  o.emotion || "thanks",
+    because:  o.because || "",
+    hope:     o.hope || "",
+    message:  o.message || "",
+    item_id:   o.gid, item_name: o.gname, item_price: o.gprice,
+    order_no:  o.no,
+    wrap_id:   o.wrapId, wrap_name: o.wrapName, wrap_price: o.wrapPrice || 0,
+    with_card: !!o.card, pay_method: o.pay, total: o.total
+  }).select("id, token").single();
+  if(error){ console.warn("gifts作成に失敗:", error.message); return null; }
+  return data;
+}
+
+/* ===== 受け取る側：ギフトを開く ==================================== */
+async function sbOpenGift(token){
+  if(!sbOn()) return null;
+  const { data, error } = await sb.rpc("open_gift", { p_token: token });
+  if(error){ console.warn("open_giftに失敗:", error.message); return null; }
+  return (data && data[0]) || null;
+}
+
+/* ===== 受け取る側：受け取り方を登録（住所は贈り主に見えません） ==== */
+async function sbReceive(token, method, address, slot){
+  if(!sbOn()) return false;
+  const { data, error } = await sb.rpc("receive_gift",
+    { p_token: token, p_method: method, p_address: address || "", p_slot: slot || "指定なし" });
+  if(error){ console.warn("receive_giftに失敗:", error.message); return false; }
+  return !!data;
+}
+
+/* ===== 受け取る側：「もう使った？」を返す ========================== */
+async function sbReplyUsed(token, used, comment){
+  if(!sbOn()) return false;
+  const { data, error } = await sb.rpc("reply_used",
+    { p_token: token, p_used: used, p_comment: comment || "" });
+  if(error){ console.warn("reply_usedに失敗:", error.message); return false; }
+  return !!data;
+}
+
+/* ===== 贈る側：返ってきた反応を取りにいく ========================== */
+async function sbFetchGifts(){
+  if(!sbOn()) return [];
+  const uid = await sbUid(); if(!uid) return [];
+  const { data, error } = await sb.from("gifts")
+    .select("id, token, order_no, recipient_name, emotion, message, item_id, item_name, item_price, total, wrap_name, recv_method, recv_slot, recv_at, reply_used, reply_comment, replied_at, sent_at")
+    .eq("owner", uid).order("sent_at", { ascending:false });
+  if(error){ console.warn("gifts取得に失敗:", error.message); return []; }
+  return data || [];
+}
+
+/* ===== 診断カードをサーバーに保存する ============================== */
+async function sbSaveDiag(typeId, scores, note, isPublic){
+  if(!sbOn()) return null;
+  const uid = await sbUid(); if(!uid) return null;
+  const { data, error } = await sb.from("diagnoses").upsert({
+    user_id: uid, type_id: typeId, scores: scores || {},
+    note: note || "", is_public: isPublic !== false, updated_at: new Date().toISOString()
+  }).select("share_token").single();
+  if(error){ console.warn("診断の保存に失敗:", error.message); return null; }
+  return data ? data.share_token : null;
+}
+
+/* ===== 診断カードを見る（ログイン不要） ============================ */
+async function sbViewDiag(token){
+  if(!sbOn()) return null;
+  const { data, error } = await sb.rpc("view_diagnosis", { p_token: token });
+  if(error){ console.warn("view_diagnosisに失敗:", error.message); return null; }
+  return (data && data[0]) || null;
+}
+
+/* ===== つながっているかを画面に出す小さな表示 ====================== */
+function sbBadge(){
+  if(!SB_CFG.key) return "";
+  return `<span class="sbb ${sbOn()?"on":""}">${sbOn()?"サーバー接続中":"接続していません"}</span>`;
+}
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+  .sbb{display:inline-block;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;
+       background:#F3EFEB;color:var(--muted);margin-left:8px}
+  .sbb.on{background:var(--okbg);color:var(--ok)}`;
+  document.head.appendChild(s);
+})();
+
+/* ==================================================================
+   Supabase をアプリに配線する
+   ------------------------------------------------------------------
+   ■ 考え方
+     URLが2通りになります。
+       サーバーあり：?pt=<トークン>  ?gt=<トークン>   ← 本物の往復ができる
+       サーバーなし：?p=<データ>     ?r=<データ>      ← 今までどおり（保険）
+     鍵が未設定なら、自動で後者になります。デモは絶対に止まりません。
+   ================================================================== */
+
+/* 元の処理を取っておく（function宣言は巻き上げられるので、ここで掴めます） */
+const _act0  = act;
+const _draw0 = draw;
+
+/* ---- 操作を包んで、サーバーが使えるときだけ差しかえる ---- */
+act = function(d){
+  switch(d.a){
+
+    /* 好み聞きを作る */
+    case "mkAsk": {
+      if(!sbOn()) return _act0(d);
+      const D = S.draft;
+      const items = (D.askItems||[]).slice();
+      sbCreateAsk(friend(D.toId).name, items).then(r => {
+        const id = "a" + Date.now();
+        S.asks.unshift({ id, sid:r?r.id:null, token:r?r.token:null, toId:D.toId,
+                         createdAt:today(), items, answers:null, done:false, seen:false });
+        D.askId = id; save(); go("asklink");
+      });
+      return;
+    }
+
+    /* ◯×の答えを送る（相手側） */
+    case "psend": {
+      if(!S.ptoken) return _act0(d);
+      const ans = Object.assign({}, S.pans);
+      sbAnswerAsk(S.ptoken, ans).then(ok => {
+        if(!ok) alert("送信できませんでした。通信を確かめて、もう一度お試しください。");
+        S.pans = null; save(); go("psent");
+      });
+      return;
+    }
+
+    /* 注文を確定する */
+    case "order": {
+      if(!sbOn()) return _act0(d);
+      const D = S.draft;
+      const g = GI(D.giftId), w = WR(D.wrapId), p = PY(D.payId||"card");
+      const total = g.price + w.price + (p.fee||0);
+      const no = orderNo();
+      sbCreateGift({
+        rname: friend(D.toId).name, emotion: D.emotion, message: D.message,
+        gid: g.id, gname: g.name, gprice: g.price, no,
+        wrapId: w.id, wrapName: w.name, wrapPrice: w.price,
+        card: D.card, pay: p.id, total
+      }).then(r => {
+        const id = "g" + Date.now();
+        S.gifts.unshift({
+          id, sid:r?r.id:null, token:r?r.token:null, no, toId:D.toId, sentAt:today(),
+          intent:{ emotion:D.emotion }, message:D.message,
+          gift:{ id:g.id, cat:g.cat, name:g.name, price:g.price },
+          wrap:{ id:w.id, name:w.name, price:w.price },
+          card:!!D.card, pay:p.id, total, receive:null, reply:null
+        });
+        const pl = (S.plans||[]).find(x => x.toId === D.toId && !x.done);
+        if(pl){ pl.steps[4].ok = true; pl.done = pl.steps.every(s=>s.ok); }
+        D.orderId = id; save(); go("ordered");
+      });
+      return;
+    }
+
+    /* 受け取り方を決める（相手側） */
+    case "rconf": {
+      if(!S.gtoken) return _act0(d);
+      const a = document.getElementById("addr");
+      if(S.rpick === "deli" && (!a || !a.value.trim())){ alert("お届け先を入力してください"); return; }
+      sbReceive(S.gtoken, S.rpick, a ? a.value.trim() : "", S.rslot || "指定なし").then(ok => {
+        if(!ok) alert("登録できませんでした。通信を確かめてください。");
+        S.rmethod = S.rpick; save(); go("recv");
+      });
+      return;
+    }
+
+    /* 「もう使った？」を返す（相手側） */
+    case "reply": {
+      if(!S.gtoken) return _act0(d);
+      const cm = (document.getElementById("cm")||{}).value || "";
+      sbReplyUsed(S.gtoken, S.rv, cm).then(ok => {
+        if(!ok) alert("送信できませんでした。通信を確かめてください。");
+        S.rv=null; S.opened=false; S.rmethod=null; S.rpick=null; S.rslot=null;
+        save(); go("sent");
+      });
+      return;
+    }
+
+    /* 診断を保存するときは、サーバーにも入れる */
+    case "dsave": {
+      _act0(d);
+      if(sbOn() && S.diag){
+        sbSaveDiag(S.diag.type, S.diag.sc, S.myNote||"", S.showDiag!==false)
+          .then(tk => { if(tk){ S.diagToken = tk; save(); } });
+      }
+      return;
+    }
+
+    default: return _act0(d);
+  }
+};
+
+/* ---- 共有URLを、サーバーのトークン方式に差しかえる ---- */
+(function(){
+  const base = V.asklink;
+  V.asklink = function(){
+    const a = S.asks.find(x => x.id === S.draft.askId);
+    if(!a || !a.token) return base();
+    const f = friend(a.toId);
+    const url = location.origin + location.pathname + "?pt=" + a.token;
+    return `
+${header("好みを聞く")}
+<div class="scr" style="padding-top:18px">
+  <h1>このリンクを送ってください</h1>
+  <p class="sub"><b>${esc(f.name)}さん</b>は、${a.items.length}件に ◯× を押すだけ。<b>30秒で終わります。</b></p>
+  <div class="card ok m16">
+    <p style="font-size:13.5px;font-weight:700;color:var(--ok)">サーバーにつながっています</p>
+    <p class="sub" style="font-size:12px;margin-top:4px">相手がどの端末で答えても、<b>あなたのアプリに返事が届きます。</b></p>
+  </div>
+  <div class="card m12" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">相手に見える文</p>
+    <p style="font-size:14.5px;margin-top:7px">「${esc(S.user.name)}さんから<br>『ちょっと好みを教えて』が届きました」</p>
+    <p class="sub" style="font-size:11.5px;margin-top:8px">※ギフトのことは、ひとことも書いていません</p>
+  </div>
+  <div class="url m16">${esc(url)}</div>
+  <button class="btn m12" data-a="share" data-v="${esc(url)}" data-t="好みを教えて">LINEなどで送る</button>
+  <button class="btn o" data-a="copy" data-v="${esc(url)}">リンクをコピーする</button>
+  <button class="btn g" data-a="home">ホームへ</button>
+</div>`;
+  };
+
+  const baseO = V.ordered;
+  V.ordered = function(){
+    const o = S.gifts.find(x => x.id === S.draft.orderId);
+    if(!o || !o.token) return baseO();
+    const f = friend(o.toId);
+    const url = location.origin + location.pathname + "?gt=" + o.token;
+    return `
+<div class="scr">
+  <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+  <div class="card ok" style="text-align:center">
+    <div style="color:var(--ok)">${icon("ok",42,1.4)}</div>
+    <h2 style="margin-top:8px">ご注文ありがとうございます</h2>
+    <p class="jlab" style="margin-top:9px">注文番号</p>
+    <p style="font-size:17px;font-weight:800;letter-spacing:.04em">${esc(o.no)}</p>
+    <p class="sub" style="font-size:12.5px">合計 ${yen(o.total)}／${esc(PY(o.pay).name)}</p>
+  </div>
+  <h1 class="m24" style="font-size:21px">このリンクを<br>${esc(f.name)}さんに送ってください</h1>
+  <p class="sub"><b style="color:var(--accent)">相手はアプリを入れる必要がありません。</b><br>
+  受け取り方は<b>相手が選びます。</b>住所はあなたには表示されません。</p>
+  <div class="url m12">${esc(url)}</div>
+  <button class="btn m12" data-a="share" data-v="${esc(url)}" data-t="ギフトが届いています">LINEなどで送る</button>
+  <button class="btn o" data-a="copy" data-v="${esc(url)}">リンクをコピーする</button>
+  <button class="btn g" data-a="home">ホームへ</button>
+</div>`;
+  };
+
+  const baseD = V.diagres;
+  V.diagres = function(){
+    const h = baseD();
+    if(!S.diagToken) return h;
+    const url = location.origin + location.pathname + "?dt=" + S.diagToken;
+    return h.replace(/<div class="url m12">[^<]*<\/div>/, `<div class="url m12">${esc(url)}</div>`)
+            .replace(/data-a="copy" data-v="[^"]*"/, `data-a="copy" data-v="${esc(url)}"`);
+  };
+})();
+
+/* ---- LINEなどで送る（スマホの共有シート） ---- */
+(function(){
+  const prev = act;
+  act = function(d){
+    if(d.a === "share"){
+      const url = d.v, title = d.t || "GiftHub";
+      if(navigator.share){
+        navigator.share({ title, text: title, url }).catch(()=>{});
+      }else{
+        navigator.clipboard.writeText(url)
+          .then(()=>alert("リンクをコピーしました。LINEなどに貼って送ってください。"))
+          .catch(()=>alert("画面のリンクを選んでコピーしてください。"));
+      }
+      return;
+    }
+    return prev(d);
+  };
+})();
+
+/* ---- サーバーから最新を取り込む ---- */
+async function sbSync(){
+  if(!sbOn()) return;
+  try{
+    const rows = await sbFetchAsks();
+    rows.forEach(r => {
+      const a = S.asks.find(x => x.token === r.token);
+      if(a && r.answers && !a.answers){ a.answers = r.answers; a.done = true; a.seen = false; }
+    });
+    const gs = await sbFetchGifts();
+    gs.forEach(r => {
+      const g = S.gifts.find(x => x.token === r.token);
+      if(!g) return;
+      if(r.recv_method && !g.receive) g.receive = { method:r.recv_method, slot:r.recv_slot, at:(r.recv_at||"").slice(0,10) };
+      if(r.reply_used && !g.reply)    g.reply   = { used:r.reply_used, comment:r.reply_comment||"", at:(r.replied_at||"").slice(0,10) };
+    });
+    save();
+  }catch(e){ console.warn("同期に失敗:", e); }
+}
+
+/* ---- 起動：サーバーにつなぎ、URLのトークンを処理する ---- */
+setTimeout(async () => {
+  const q = new URLSearchParams(location.search);
+  const pt = q.get("pt"), gt = q.get("gt"), dt = q.get("dt");
+  if(!SB_CFG.key){
+    if(pt || gt || dt){
+      document.getElementById("app").innerHTML =
+        `<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
+          <h1>準備中です</h1>
+          <p class="sub">このリンクはサーバー接続が必要です。<br>いましばらくお待ちください。</p>
+        </div>`;
+    }
+    return;
+  }
+  const ok = await sbInit();
+  if(!ok){ console.warn("サーバーにつながりませんでした。端末内のデータで動きます。"); draw(); return; }
+
+  if(pt){                                   /* 好み聞きを開く */
+    const r = await sbOpenAsk(pt);
+    if(r){ S.pbox = { id:pt, s:r.sender_name, items:r.items }; S.ptoken = pt; S.pans = {};
+           cur = r.already ? "psent" : "pans"; draw(); return; }
+  }
+  if(gt){                                   /* ギフトを開く */
+    const r = await sbOpenGift(gt);
+    if(r){ S.inbox = { s:r.sender_name, r:r.recipient_name, e:r.emotion, m:r.message,
+                       g:{ id:r.item_id, cat:(GI(r.item_id)||{}).cat||"sweets", name:r.item_name, price:r.item_price } };
+           S.gtoken = gt; S.opened = false; S.rmethod = null;
+           cur = "recv"; draw(); return; }
+  }
+  if(dt){                                   /* 診断カードを見る */
+    const r = await sbViewDiag(dt);
+    if(r){ S.dbox = { n:r.nickname, t:r.type_id, s:r.scores }; cur = "dview"; draw(); return; }
+    document.getElementById("app").innerHTML =
+      `<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
+        <h1>見つかりませんでした</h1>
+        <p class="sub">このカードは非公開に設定されているか、削除された可能性があります。</p></div>`;
+    return;
+  }
+  await sbSync();
+  draw();
+}, 0);
+
 /* 追加スタイル（購入フロー用） */
 (function(){
   const s = document.createElement("style");
