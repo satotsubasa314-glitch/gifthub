@@ -221,7 +221,7 @@ input:focus,textarea:focus{outline:0;border-color:var(--accent)}
         （PRESENTERS ROOM https://presentersroom.jp/ の構造）
      3. 価格は税込表示（大和様のサイトに合わせる）
    ================================================================== */
-const CFG = { name:"GiftHub", ver:"1.4", key:"gifthub_v14" };
+const CFG = { name:"GiftHub", ver:"1.7", key:"gifthub_v17" };
 
 /* ===== 線画アイコン ==================================================
    絵文字を使わず、同じ太さ・同じ角丸の線で統一します。
@@ -745,7 +745,7 @@ ${header()}
 /* --- 相手を選ぶ（元のホーム） --- */
 friends(){
   const bds = upcomingBirthdays();
-  const plans = (S.plans||[]).filter(p => !p.done);
+  const plans = (S.projects||[]).filter(p => !p.done);
   const ago = onThisDay();
   return `
 ${header("だれに贈る？")}
@@ -759,14 +759,15 @@ ${header("だれに贈る？")}
           <div class="nt">${b.days===0?"<b>今日です</b>":`あと <b>${b.days}日</b>（${b.md.replace("-","/")}）`}</div></div>
         <div style="color:#DCCFC4;font-size:21px">›</div></div>`).join("")}
   </div>` : ""}
-  ${plans.length ? `<div class="card m16" style="border-color:rgba(123,94,167,.35)">
-    <p class="jlab" style="color:#7B5EA7">進行中のギフト計画</p>
+  ${plans.length ? `<div class="card m16 hl">
+    <p class="jlab" style="color:var(--accent)">進行中のプロジェクトギフト</p>
     ${plans.slice(0,2).map(p=>{
-      const dn = p.steps.filter(s=>s.ok).length;
-      return `<div data-a="plan" data-id="${p.id}" style="cursor:pointer;margin-top:9px">
-        <div style="font-size:15px;font-weight:700">${esc(friend(p.toId).name)}さんへ ／ ${esc(p.goal)}</div>
-        <div class="prog" style="margin:7px 0 4px"><i style="width:${Math.round(dn/p.steps.length*100)}%;background:#7B5EA7"></i></div>
-        <div class="sub" style="margin:0;font-size:11.5px">${dn} / ${p.steps.length} 完了${p.due?`　締切 ${esc(p.due)}`:""}</div>
+      const dn = pjProgress(p);
+      const nm = p.toName || (p.toId ? friend(p.toId).name : "相手は未定");
+      return `<div data-a="pjopen" data-id="${p.id}" style="cursor:pointer;margin-top:9px">
+        <div style="font-size:15px;font-weight:700">${esc(nm)}さんへ ／ ${esc(p.purpose?PUR(p.purpose).name:"目的は未定")}</div>
+        <div class="prog" style="margin:7px 0 4px"><i style="width:${Math.round(dn/6*100)}%"></i></div>
+        <div class="sub" style="margin:0;font-size:11.5px">${dn} / 6 まで進みました${p.sendDate?`　送る日 ${esc(p.sendDate)}`:""}</div>
       </div>`}).join("")}
   </div>` : ""}
   <div class="card m16">${S.friends.map(f=>{
@@ -894,13 +895,13 @@ ${header(f.name + "さんに贈る")}
       ${Object.keys(p).filter(k=>p[k]==="n").map(k=>`<span class="tag x">${esc(GI(k)?GI(k).cat:"")}</span>`).join("")}
     </div></div>` : ""}
   <div class="m16">
-    <div class="pick main" data-a="toItems"><span class="em"></span>
+    <div class="pick main" data-a="toItems"><span class="em">${icon("gift",24)}</span>
       <div><b>そのまま贈る</b><span>${d?"診断結果に合わせて候補を出します":(ny?`◯がついた ${ny} 件を優先します`:"候補を3つ出します")}</span></div></div>
-    <div class="pick" data-a="toAsk"><span class="em"></span>
+    <div class="pick" data-a="toAsk"><span class="em">${icon("ok",24)}</span>
       <div><b>好みを聞く</b><span>候補を ◯× で選んでもらう。<br><b>何を贈るつもりかは、相手に分かりません</b></span></div></div>
-    <div class="pick" data-a="newplan"><span class="em"></span>
-      <div><b>ギフト計画を立てる</b><span>先にゴールを決めて、やることを順番に</span></div></div>
-    <div class="pick" data-a="talk"><span class="em"></span>
+    <div class="pick" data-a="pjstart" data-id="${f.id}"><span class="em">${icon("plan",24)}</span>
+      <div><b>プロジェクトギフトで贈る</b><span>目的 → 感情 → 好み → ギフト → 梱包 → その後。<br><b>途中でやめても戻れます</b></span></div></div>
+    <div class="pick" data-a="talk"><span class="em">${icon("chat",24)}</span>
       <div><b>AIに相談する</b><span>相手の趣味を自分が知らないときに</span></div></div>
   </div>
 </div>`},
@@ -2201,6 +2202,44 @@ function sbBadge(){
   document.head.appendChild(s);
 })();
 
+/* ===== v1.7 追加：感想・感謝カード ================================= */
+
+/* もらった人が「どうだったか」を書く（ログイン不要） */
+async function sbFeelGift(token, pick, text, anon){
+  if(!sbOn()) return false;
+  const { data, error } = await sb.rpc("feel_gift",
+    { p_token: token, p_pick: pick || [], p_text: text || "", p_anon: anon !== false });
+  if(error){ console.warn("feel_giftに失敗:", error.message); return false; }
+  return !!data;
+}
+
+/* もらった人が「感謝カード」を送る（ログイン不要） */
+async function sbSendThanks(token, message, photo, name){
+  if(!sbOn()) return false;
+  const { data, error } = await sb.rpc("send_thanks",
+    { p_token: token, p_message: message || "", p_photo: photo || null, p_name: name || "" });
+  if(error){ console.warn("send_thanksに失敗:", error.message); return false; }
+  return !!data;
+}
+
+/* 贈った人が、届いた感謝カードを取りにいく */
+async function sbFetchThanks(){
+  if(!sbOn()) return [];
+  const { data, error } = await sb.from("thanks_cards")
+    .select("id, gift_id, message, photo, from_name, created_at")
+    .order("created_at", { ascending:false }).limit(30);
+  if(error){ console.warn("thanks_cards取得に失敗:", error.message); return []; }
+  return data || [];
+}
+
+/* 商品についた「ふたりの声」をサーバーから取る */
+async function sbVoices(itemId){
+  if(!sbOn()) return [];
+  const { data, error } = await sb.rpc("product_voices", { p_item: itemId });
+  if(error){ console.warn("product_voicesに失敗:", error.message); return []; }
+  return data || [];
+}
+
 /* ==================================================================
    Supabase をアプリに配線する
    ------------------------------------------------------------------
@@ -2700,6 +2739,709 @@ function voicesOf(gid){
        <button class="btn g" data-a="home">あとで書く</button>`);
   };
 })();
+
+/* ==================================================================
+   プロジェクトギフト（仕様書 10_プロジェクトギフト仕様.md の実装）
+   ------------------------------------------------------------------
+   ① 目的 → ② 伝えたい感情 → ③ 相手の好み分析 → ④ ギフト探し
+   → ⑤ 梱包 → ⑥ その後
+
+   ★すべてやる必要はなく、飛ばせます
+   ★途中でやめても、ここに残るので戻ってこられます
+   ================================================================== */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+  .pj{border:1.5px solid var(--line);border-radius:18px;background:var(--surface);
+      padding:16px;margin-bottom:11px;cursor:pointer;box-shadow:var(--sh)}
+  .pj.on{border-color:var(--accent);background:var(--soft)}
+  .pj .ttl{font-size:15.5px;font-weight:800}
+  .pj .sb{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.55}
+  .stp{display:flex;align-items:center;gap:12px;padding:15px 14px;border:1.5px solid var(--line);
+       border-radius:15px;background:var(--surface);margin-bottom:9px;cursor:pointer;transition:.15s}
+  .stp.done{background:var(--okbg);border-color:rgba(62,107,82,.3)}
+  .stp.now{border-color:var(--accent);box-shadow:var(--sh-lift)}
+  .stp .no{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;
+           font-size:13px;font-weight:800;background:var(--line);color:var(--muted)}
+  .stp.done .no{background:var(--ok);color:#fff}
+  .stp.now .no{background:var(--grad);color:#fff}
+  .stp .m{flex:1;min-width:0}
+  .stp .t{font-size:15px;font-weight:800;line-height:1.4}
+  .stp .d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5;
+          overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stp .ar{color:#DCCFC4;font-size:19px}
+  .em3{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .em3:last-child{border-bottom:0}
+  .em3 .nm{flex:1;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .em3 .nm .ic-s{color:var(--accent)}
+  .lv{display:flex;gap:5px;flex:0 0 auto}
+  .lv button{width:34px;height:32px;border-radius:9px;border:1.5px solid var(--line);
+             background:var(--surface);font-family:inherit;font-size:12px;font-weight:800;
+             color:var(--muted);cursor:pointer;transition:.14s}
+  .lv button.on{background:var(--grad);border-color:transparent;color:#fff}
+  .card2{border:1.5px dashed var(--line);border-radius:18px;padding:18px;text-align:center}
+  .tcard{background:var(--grad-soft);border:1px solid rgba(176,80,60,.2);border-radius:20px;
+         padding:18px;margin-bottom:12px}
+  .tcard img{width:100%;border-radius:13px;margin-top:11px;display:block}
+  .tcard .mg{font-size:15px;line-height:1.85;margin-top:8px}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ===== 目的 ===== */
+const PURPOSES = [
+  { id:"bd",     ic:"cake",   name:"誕生日",        sub:"日が決まっている" },
+  { id:"anniv",  ic:"ring",   name:"記念日",        sub:"ふたりの節目" },
+  { id:"just",   ic:"gift",   name:"ただのプレゼント", sub:"理由はとくにない" },
+  { id:"thanks", ic:"flower", name:"お礼",          sub:"助けてもらった" },
+  { id:"celeb",  ic:"spark",  name:"お祝い",        sub:"就職・合格・引越など" },
+  { id:"sorry",  ic:"heal",   name:"あやまりたい",   sub:"仲直りしたい" }
+];
+const PUR = id => PURPOSES.find(p => p.id === id) || PURPOSES[2];
+
+/* ===== 七つの感情（滝島さん案の7つ。各3段階） ===== */
+const SEVEN = [
+  { id:"ouen",  ic:"spark",   name:"応援",     sub:"がんばれ" },
+  { id:"kansha",ic:"flower",  name:"感謝",     sub:"ありがとう" },
+  { id:"negi",  ic:"heal",    name:"労い",     sub:"おつかれさま" },
+  { id:"shita", ic:"ring",    name:"下心",     sub:"気になっている" },
+  { id:"ura",   ic:"chat",    name:"裏心",     sub:"言えない気持ち" },
+  { id:"giri",  ic:"catalog", name:"義務感",   sub:"返さなきゃ" },
+  { id:"jiko",  ic:"user",    name:"自己満足", sub:"自分がしたいから" }
+];
+const LV = ["", "すこし", "ふつう", "とても"];
+
+/* ===== 6つの段 ===== */
+const PSTEPS = [
+  { n:1, key:"purpose", t:"目的を決める",      d:"誕生日？記念日？ただのプレゼント？" },
+  { n:2, key:"emotion", t:"伝えたい感情",      d:"7つの気持ちを3段階で。言葉も添えられます" },
+  { n:3, key:"pref",    t:"相手の好みを知る",  d:"診断のURLを送る／◯×で聞く" },
+  { n:4, key:"find",    t:"ギフトを探す",      d:"評価・価格でしぼれます" },
+  { n:5, key:"pack",    t:"梱包と送る日",      d:"ラッピング・送る日・URLの発行" },
+  { n:6, key:"after",   t:"その後",            d:"どうして選んだのか／どうだったか" }
+];
+
+function projs(){ S.projects = S.projects || []; return S.projects; }
+function proj(){ return projs().find(p => p.id === S.pjId) || null; }
+function pjDone(p, key){
+  if(!p) return false;
+  switch(key){
+    case "purpose": return !!p.purpose;
+    case "emotion": return Object.values(p.emotions||{}).some(v => v > 0) || !!p.words;
+    case "pref":    return !!p.askId || !!p.diagPicked;
+    case "find":    return !!p.giftId;
+    case "pack":    return !!p.wrapId;
+    case "after":   return !!p.afterDone;
+  }
+  return false;
+}
+function pjProgress(p){ return PSTEPS.filter(s => pjDone(p, s.key)).length; }
+
+/* ===== 一覧（設定から入る） ===== */
+V.pjlist = function(){
+  const list = projs();
+  return `
+${header("プロジェクトギフト")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">プロジェクトギフト</h1>
+  <p class="sub">目的を決めて、順番に進めます。<br>
+  <b style="color:var(--accent)">途中でやめても、ここに残ります。</b>全部やる必要はありません。</p>
+  <button class="btn m16" data-a="pjnew">新しく始める</button>
+  ${list.length ? `<p class="jlab m24">進行中・完了したもの</p>
+  <div class="m12">${list.map(p => {
+    const n = pjProgress(p), f = p.toName || (p.toId ? friend(p.toId).name : "（相手は未定）");
+    return `<div class="pj" data-a="pjopen" data-id="${p.id}">
+      <div class="ttl">${esc(f)}さんへ ／ ${esc(p.purpose ? PUR(p.purpose).name : "目的は未定")}</div>
+      <div class="prog" style="margin:9px 0 5px"><i style="width:${Math.round(n/6*100)}%"></i></div>
+      <div class="sb">${n} / 6 まで進みました${p.createdAt?`　${p.createdAt}`:""}</div>
+    </div>`;
+  }).join("")}</div>` : `<div class="card2 m24">
+    <p class="sub" style="margin:0">まだありません。<br><b>「新しく始める」</b>から作ってください。</p></div>`}
+</div>`;
+};
+
+/* ===== 進行画面（6つの段） ===== */
+V.pj = function(){
+  const p = proj(); if(!p) return V.pjlist();
+  const n = pjProgress(p);
+  const f = p.toName || (p.toId ? friend(p.toId).name : "（相手は未定）");
+  const now = PSTEPS.find(s => !pjDone(p, s.key));
+  const sum = {
+    purpose: p.purpose ? PUR(p.purpose).name : "",
+    emotion: Object.keys(p.emotions||{}).filter(k => p.emotions[k] > 0)
+               .map(k => (SEVEN.find(e=>e.id===k)||{}).name + "・" + LV[p.emotions[k]]).join("／"),
+    pref:    p.diagPicked ? ("タイプ：" + DT(p.diagPicked).name) : (p.askId ? "◯×を送りました" : ""),
+    find:    p.giftId ? (GI(p.giftId)||{}).name : "",
+    pack:    p.wrapId ? (WR(p.wrapId).name + (p.sendDate ? "／" + p.sendDate : "")) : "",
+    after:   p.afterDone ? "記録しました" : ""
+  };
+  return `
+${header("プロジェクトギフト")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">${esc(f)}さんへ</h1>
+  <p class="sub">${p.purpose ? PUR(p.purpose).name : "目的は未定"}　／　${n} / 6 まで進みました</p>
+  <div class="prog m12"><i style="width:${Math.round(n/6*100)}%"></i></div>
+  <div class="m16">${PSTEPS.map(s => {
+    const done = pjDone(p, s.key), isNow = now && now.key === s.key;
+    return `<div class="stp ${done?"done":""} ${isNow?"now":""}" data-a="pjstep" data-v="${s.key}">
+      <div class="no">${done ? icon("check",15,2.6) : s.n}</div>
+      <div class="m"><div class="t">${s.t}</div>
+        <div class="d">${esc(sum[s.key] || s.d)}</div></div>
+      <div class="ar">›</div></div>`;
+  }).join("")}</div>
+  <p class="sub" style="font-size:12px">どの段からでも始められます。<b>飛ばしても大丈夫です。</b></p>
+  <button class="btn g m16" data-a="pjlist">一覧にもどる</button>
+  <button class="btn g" data-a="pjdel" style="color:var(--accent)">このプロジェクトをやめる</button>
+</div>`;
+};
+
+/* ===== ① 目的 ===== */
+V.pj1 = function(){
+  const p = proj(); if(!p) return V.pjlist();
+  return `
+${header("① 目的")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">何のために<br>贈りますか？</h1>
+  <p class="sub">先に決めると、あとの選択がぶれません。</p>
+  <div class="m16">${PURPOSES.map(x => `
+    <div class="pick ${p.purpose===x.id?"main":""}" data-a="pjpur" data-v="${x.id}">
+      <span class="em">${icon(x.ic,24)}</span>
+      <div><b>${x.name}</b><span>${x.sub}</span></div></div>`).join("")}</div>
+  <div class="fld m16"><label class="jlab">だれに贈りますか？</label>
+    <div class="chips">${S.friends.map(f=>`
+      <button class="chip ${p.toId===f.id?"on":""}" data-a="pjto" data-v="${f.id}">${esc(f.name)}</button>`).join("")}</div>
+  </div>
+  <div class="fld"><label class="jlab">一覧にない相手（任意）</label>
+    <input id="pjtn" value="${esc(p.toName||"")}" placeholder="例：サキ"></div>
+  <button class="btn" data-a="pjsave1">決めて次へ</button>
+  <button class="btn g" data-a="pjback">あとで決める</button>
+</div>`;
+};
+
+/* ===== ② 伝えたい感情（7つ × 3段階） ===== */
+V.pj2 = function(){
+  const p = proj(); if(!p) return V.pjlist();
+  const e = p.emotions || {};
+  return `
+${header("② 伝えたい感情")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">どんな気持ちを<br>伝えたいですか？</h1>
+  <p class="sub"><b>いくつ選んでもかまいません。</b>強さも3段階で選べます。<br>
+  ひとつの気持ちだけ、ということは少ないはずです。</p>
+  <div class="card m16">
+    ${SEVEN.map(x => `<div class="em3">
+      <div class="nm">${icon(x.ic,18)}${x.name}<span class="sub" style="margin:0;font-size:11px">${x.sub}</span></div>
+      <div class="lv">${[1,2,3].map(v=>`
+        <button class="${(e[x.id]||0)===v?"on":""}" data-a="pjem" data-v="${x.id}:${v}">${LV[v]}</button>`).join("")}</div>
+    </div>`).join("")}
+  </div>
+  <p class="sub" style="font-size:11.5px">同じボタンをもう一度押すと、取り消せます。</p>
+  <div class="fld m16"><label class="jlab">＋α　言葉でも伝えるなら（任意）</label>
+    <textarea id="pjw" rows="3" placeholder="例：いつも助けてもらってるけど、ちゃんと言えてなかったから">${esc(p.words||"")}</textarea></div>
+  <p class="sub" style="font-size:11.5px">※相手には「気持ちの名前」は見せません。<b>言葉だけが届きます。</b></p>
+  <button class="btn m16" data-a="pjsave2">記録して次へ</button>
+  <button class="btn g" data-a="pjback">あとで決める</button>
+</div>`;
+};
+
+/* ===== ③ 相手の好みを知る ===== */
+V.pj3 = function(){
+  const p = proj(); if(!p) return V.pjlist();
+  const f = p.toName || (p.toId ? friend(p.toId).name : "相手");
+  const dUrl = S.diagToken
+    ? location.origin + location.pathname + "?dt=" + S.diagToken
+    : location.origin + location.pathname;
+  return `
+${header("③ 相手の好みを知る")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">${esc(f)}さんの好みを<br>知る方法を選んでください</h1>
+  <p class="sub">やらなくても進めます。<b>でも、やると外しにくくなります。</b></p>
+
+  <div class="card hl m16">
+    <p class="jlab">A　診断のURLを送る（アプリ不要）</p>
+    <p style="font-size:14px;margin-top:6px">
+      <b>${esc(f)}さん</b>に12問の診断を送ります。<br>
+      アプリを入れていない友人でも、<b>2分で答えられます。</b></p>
+    <button class="btn s" style="margin-top:11px" data-a="share"
+      data-v="${esc(location.origin + location.pathname)}?diag=1" data-t="ギフトの好み、教えて">
+      LINEなどで診断を送る</button>
+    <p class="jlab m16">返ってきた結果を選ぶ</p>
+    <div class="chips">${Object.keys(DTYPES).map(k=>`
+      <button class="chip ${p.diagPicked===k?"on":""}" data-a="pjdiag" data-v="${k}">${DT(k).name}</button>`).join("")}</div>
+    <p class="sub" style="font-size:11.5px">※相手から聞いたタイプを、ここで選んでください</p>
+  </div>
+
+  <div class="card m16">
+    <p class="jlab">B　◯× で候補を聞く（中身は隠したまま）</p>
+    <p style="font-size:14px;margin-top:6px">
+      候補を4〜8個えらんで送ると、<b>◯△×</b> で答えてくれます。<br>
+      <b>何を贈るつもりかは、相手に分かりません。</b></p>
+    <button class="btn s" style="margin-top:11px" data-a="pjask">◯×で聞きにいく</button>
+  </div>
+
+  <div class="card m16">
+    <p class="jlab">C　アプリを持っている友人から選ぶ</p>
+    <div class="chips">${S.friends.map(f2=>`
+      <button class="chip ${p.toId===f2.id?"on":""}" data-a="pjto" data-v="${f2.id}">
+        ${esc(f2.name)}${f2.diag?"（"+DT(f2.diag).name+"）":""}</button>`).join("")}</div>
+  </div>
+
+  <button class="btn m24" data-a="pjback">プロジェクトにもどる</button>
+</div>`;
+};
+
+/* ===== ⑤ 梱包と送る日 ===== */
+V.pj5 = function(){
+  const p = proj(); if(!p) return V.pjlist();
+  const g = p.giftId ? GI(p.giftId) : null;
+  return `
+${header("⑤ 梱包と送る日")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">どう包んで、<br>いつ送りますか？</h1>
+  ${g ? `<div class="item m16" style="cursor:default">
+    <div class="ic">${gicon(g)}</div>
+    <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div></div></div>`
+    : `<div class="card2 m16"><p class="sub" style="margin:0">
+    まだギフトを決めていません。<br><b>④ ギフトを探す</b>から先に選んでください。</p></div>`}
+  <p class="jlab m16">包み方</p>
+  <div class="m12">${WRAPS.map(w=>`
+    <div class="item ${p.wrapId===w.id?"on":""}" data-a="pjwrap" data-v="${w.id}">
+      <div class="ic">${icon(w.ic,24,1.5)}</div>
+      <div class="m"><div class="nm">${esc(w.name)}</div><div class="pr">${esc(w.note)}</div></div>
+      <div style="font-weight:800;font-size:14px">${w.price?"+"+yen(w.price):"無料"}</div>
+    </div>`).join("")}</div>
+  <div class="fld m16"><label class="jlab">送る日（任意）</label>
+    <input id="pjd" value="${esc(p.sendDate||"")}" placeholder="例：11/08"></div>
+  <div class="card" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">このあと</p>
+    <p style="font-size:13.5px;margin-top:6px">
+      <b>URLを発行します。</b>そのリンクを送ると、相手の画面に<br>
+      「どんなギフトが届いたか」が表示されます。</p>
+  </div>
+  <button class="btn m16" data-a="pjsave5" ${p.giftId?"":"disabled"}>記録して次へ</button>
+  <button class="btn g" data-a="pjback">あとで決める</button>
+</div>`;
+};
+
+/* ===== 感謝カード（受け取った人が作る） ===== */
+V.thanks = function(){
+  const p = S.inbox;
+  return `
+<div class="scr">
+  <p class="jlab">感謝を伝える</p>
+  <h1 style="margin-top:3px">カードを作って<br>送りませんか？</h1>
+  <p class="sub">${p?esc(p.s)+"さんに":""}、ひとことと写真で。<br>
+  <b style="color:var(--accent)">贈った人は、これを記念に保存できます。</b></p>
+  <div class="fld m16"><label class="jlab">メッセージ</label>
+    <textarea id="tkm" rows="4" data-focus placeholder="例：ありがとう！さっそく使ってます。">${esc(S.tkMsg||"")}</textarea></div>
+  <div class="fld"><label class="jlab">写真（任意）</label>
+    <input type="file" id="tkp" accept="image/*" style="padding:12px;font-size:13px">
+    <p class="sub" style="font-size:11.5px">※使っているところの写真があると、とても喜ばれます</p></div>
+  <div class="fld"><label class="jlab">お名前（任意）</label>
+    <input id="tkn" placeholder="入れなければ匿名で届きます" value="${esc(S.tkName||"")}"></div>
+  <button class="btn m16" data-a="tksend">カードを送る</button>
+  <button class="btn g" data-a="home">送らない</button>
+</div>`;
+};
+
+V.tkdone = function(){ return `
+<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
+  <div style="color:var(--accent)">${icon("mail",54,1.3)}</div>
+  <h1 class="m16">カードを送りました</h1>
+  <p class="sub">${S.inbox?esc(S.inbox.s)+"さん":"贈ってくれた人"}の<b>記念カード</b>に保存されます。</p>
+  <button class="btn m24" data-a="home">自分も使ってみる</button>
+</div>`;
+};
+
+/* ===== 記念カード（設定から見る） ===== */
+V.memories = function(){
+  const cards = S.cards || [];
+  return `
+${header("記念カード")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">記念カード</h1>
+  <p class="sub">自分で決めた<b>ギフトの目的</b>と、相手からの<b>感謝の気持ち</b>を残しています。</p>
+  ${cards.length ? cards.map(c => `<div class="tcard">
+    <p class="jlab">${esc(c.at||"")}　${esc(c.to||"")}さんへ</p>
+    ${c.purpose?`<p style="font-size:13px;margin-top:5px;color:var(--muted)">目的：${esc(c.purpose)}</p>`:""}
+    ${c.msg?`<p class="mg">「${esc(c.msg)}」</p>`:""}
+    ${c.photo?`<img src="${c.photo}" alt="">`:""}
+    <p class="sub" style="font-size:11.5px;margin-top:9px">${esc(c.from||"匿名")} より</p>
+  </div>`).join("") : `<div class="card2 m16">
+    <p class="sub" style="margin:0">まだありません。<br>
+    相手から<b>感謝カード</b>が届くと、ここに残ります。</p></div>`}
+</div>`;
+};
+
+/* ==================================================================
+   プロジェクトギフトの操作・配線
+   ------------------------------------------------------------------
+   ・L.html の画面に、動きをつけます
+   ・古い「ギフト計画」は、ここで プロジェクトギフト に差しかえます
+     （コードは消していません。入口だけ付けかえています）
+   ================================================================== */
+
+/* ===== プロジェクトを1つ作る ======================================== */
+function pjCreate(toId){
+  const id = "pj" + Date.now();
+  projs().unshift({
+    id, toId: toId || null, toName: toId ? friend(toId).name : "",
+    purpose:"", emotions:{}, words:"",
+    askId:null, diagPicked:null, giftId:null, wrapId:null,
+    sendDate:"", afterDone:false, done:false, createdAt: today()
+  });
+  S.pjId = id;
+  return id;
+}
+
+/* ===== ④ギフト探し・⑤梱包のために、下書きを用意する ================ */
+function pjDraft(p, keepGift){
+  S.draft = {
+    toId: p.toId || (S.friends[0] || {}).id,
+    askItems: [], giftId: keepGift ? (p.giftId || null) : null,
+    emotion: null, message: p.words || "", ho: false, budget: 0,
+    wrapId: p.wrapId || null, card: true, payId: "card",
+    fromPj: p.id
+  };
+}
+
+/* ===== 操作 ========================================================= */
+(function(){
+  const prev = act;
+  act = function(d){
+    const p = proj();
+    switch(d.a){
+
+      /* ---- 一覧・新規・開く・やめる ---- */
+      case "pjlist": S.menu = false; S.pjId = null; save(); go("pjlist"); return;
+      case "pjnew":  pjCreate(null);   save(); go("pj1"); return;
+      case "pjstart": pjCreate(d.id);  save(); go("pj1"); return;
+      case "pjopen": S.menu = false; S.pjId = d.id; save(); go("pj"); return;
+      case "pjback": save(); go("pj"); return;
+      case "pjdel":
+        if(!confirm("このプロジェクトをやめますか？")) return;
+        S.projects = projs().filter(x => x.id !== S.pjId);
+        S.pjId = null; save(); go("pjlist"); return;
+
+      /* ---- 古い「ギフト計画」の入口を、ここに付けかえる ---- */
+      case "newplan": {
+        const t = (S.draft && S.draft.toId) || null;
+        pjCreate(t); save(); go("pj1"); return;
+      }
+      case "plan": S.pjId = d.id; save(); go("pj"); return;
+
+      /* ---- 段をひらく ---- */
+      case "pjstep": {
+        if(!p) return;
+        if(d.v === "purpose"){ go("pj1"); return; }
+        if(d.v === "emotion"){ go("pj2"); return; }
+        if(d.v === "pref"){    go("pj3"); return; }
+        if(d.v === "find"){    pjDraft(p, true); save(); go("items"); return; }
+        if(d.v === "pack"){    go("pj5"); return; }
+        if(d.v === "after"){
+          const g = S.gifts.find(x => x.pjId === p.id)
+                 || S.gifts.find(x => x.toId === p.toId);
+          if(!g){ alert("先に ④ でギフトを決めて、⑤ で送ってください。"); return; }
+          S.whyId = g.id;
+          S.whyPick = (g.why && g.why.pick) ? g.why.pick.slice() : [];
+          S.whyText = (g.why && g.why.text) || "";
+          save(); go("why"); return;
+        }
+        return;
+      }
+
+      /* ---- ① 目的 ---- */
+      case "pjpur": if(p){ p.purpose = d.v; save(); go("pj1"); } return;
+      case "pjto":
+        if(p){
+          p.toId = (p.toId === d.v) ? null : d.v;
+          p.toName = p.toId ? friend(p.toId).name : "";
+          save(); draw();
+        }
+        return;
+      case "pjsave1": {
+        if(!p) return;
+        const t = document.getElementById("pjtn");
+        if(t && t.value.trim() && !p.toId) p.toName = t.value.trim();
+        if(!p.purpose){ alert("目的をひとつ選んでください。"); return; }
+        save(); go("pj2"); return;
+      }
+
+      /* ---- ② 伝えたい感情（7つ × 3段階） ---- */
+      case "pjem": {
+        if(!p) return;
+        const parts = String(d.v).split(":");
+        const k = parts[0], v = Number(parts[1]);
+        p.emotions = p.emotions || {};
+        p.emotions[k] = (p.emotions[k] === v) ? 0 : v;   /* 同じを押すと取り消し */
+        const w = document.getElementById("pjw"); if(w) p.words = w.value;
+        save(); go("pj2"); return;
+      }
+      case "pjsave2": {
+        if(!p) return;
+        const w = document.getElementById("pjw"); if(w) p.words = w.value.trim();
+        save(); go("pj"); return;
+      }
+
+      /* ---- ③ 相手の好みを知る ---- */
+      case "pjdiag":
+        if(p){
+          p.diagPicked = (p.diagPicked === d.v) ? null : d.v;
+          if(p.toId && p.diagPicked){ const f = friend(p.toId); if(f) f.diag = p.diagPicked; }
+          save(); go("pj3");
+        }
+        return;
+      case "pjask": if(p){ pjDraft(p, false); save(); go("ask"); } return;
+
+      /* ---- ⑤ 梱包と送る日 ---- */
+      case "pjwrap": if(p){ p.wrapId = d.v; save(); go("pj5"); } return;
+      case "pjsave5": {
+        if(!p) return;
+        if(!p.giftId){ alert("先に ④ でギフトを決めてください。"); return; }
+        const dt = document.getElementById("pjd"); if(dt) p.sendDate = dt.value.trim();
+        if(!p.wrapId) p.wrapId = "w1";
+        pjDraft(p, true);
+        S.draft.wrapId = p.wrapId;
+        save(); go("word"); return;
+      }
+
+      /* ---- 感謝カード（受け取った人がつくる） ---- */
+      case "thanks": save(); go("thanks"); return;
+      case "tksend": {
+        const m  = ((document.getElementById("tkm") || {}).value || "").trim();
+        const n  = ((document.getElementById("tkn") || {}).value || "").trim();
+        const ph = document.getElementById("tkp");
+        if(!m){ alert("ひとこと書いてください。"); return; }
+
+        const finish = (photo) => {
+          S.cards = S.cards || [];
+          S.cards.unshift({
+            at: today(),
+            to: (S.inbox && S.inbox.s) || "",
+            from: n || "匿名",
+            msg: m, photo: photo || null,
+            purpose: (S.inbox && S.inbox.purpose) || ""
+          });
+          S.tkMsg = ""; S.tkName = ""; save();
+          if(S.gtoken && typeof sbSendThanks === "function"){
+            sbSendThanks(S.gtoken, m, photo, n).then(() => { go("tkdone"); });
+          } else { go("tkdone"); }
+        };
+
+        if(ph && ph.files && ph.files[0]){
+          const f = ph.files[0];
+          if(f.size > 1400000){ alert("写真が大きすぎます。1.4MB より小さいものを選んでください。"); return; }
+          const fr = new FileReader();
+          fr.onload  = () => finish(fr.result);
+          fr.onerror = () => finish(null);
+          fr.readAsDataURL(f);
+        } else finish(null);
+        return;
+      }
+      case "memories": S.menu = false; save(); go("memories"); return;
+
+      default: return prev(d);
+    }
+  };
+})();
+
+/* ===== 画面がひらいた時点で、プロジェクトに結びつける ================
+   ・注文は、サーバーにつながっていると非同期になります
+   ・だから「注文したとき」ではなく「注文できた画面」で結びつけます
+   =================================================================== */
+(function(){
+  /* ④で選んだギフトを、その場でプロジェクトに書きこむ */
+  const prev = act;
+  act = function(d){
+    if(d.a === "gi" && S.draft && S.draft.fromPj){
+      const r = prev(d);
+      const p = projs().find(x => x.id === S.draft.fromPj);
+      if(p){ p.giftId = S.draft.giftId; save(); }
+      return r;
+    }
+    return prev(d);
+  };
+
+  /* ⑤の発行画面 → gift と project を結ぶ */
+  const baseO = V.ordered;
+  V.ordered = function(){
+    const pid = S.draft && S.draft.fromPj;
+    if(pid){
+      const p = projs().find(x => x.id === pid);
+      const g = S.gifts.find(x => x.id === (S.draft && S.draft.orderId));
+      if(p && g){
+        p.giftId = g.gift.id;
+        p.wrapId = (g.wrap && g.wrap.id) || p.wrapId;
+        g.pjId = p.id; g.purpose = p.purpose; g.emotions = p.emotions;
+        save();
+      }
+    }
+    return baseO();
+  };
+
+  /* ③の◯×リンク画面 → ask と project を結ぶ */
+  const baseA = V.asklink;
+  V.asklink = function(){
+    const pid = S.draft && S.draft.fromPj;
+    if(pid){
+      const p = projs().find(x => x.id === pid);
+      if(p && S.draft.askId){ p.askId = S.draft.askId; save(); }
+    }
+    return baseA();
+  };
+
+  /* ⑥「贈った理由」を書いたら、6段目を完了にする */
+  const prev2 = act;
+  act = function(d){
+    if(d.a === "whysave"){
+      const id = S.whyId;
+      const r = prev2(d);
+      const g = S.gifts.find(x => x.id === id);
+      if(g && g.pjId){
+        const p = projs().find(x => x.id === g.pjId);
+        if(p){ p.afterDone = true; p.done = (pjProgress(p) >= 6); save(); }
+      }
+      return r;
+    }
+    return prev2(d);
+  };
+})();
+
+/* ===== ⑤の発行画面に「プロジェクトにもどる」を足す ================= */
+(function(){
+  const base = V.ordered;
+  V.ordered = function(){
+    const h = base();
+    const pid = S.draft && S.draft.fromPj;
+    if(!pid) return h;
+    return h.replace('<button class="btn g" data-a="home">あとで書く</button>',
+      `<button class="btn g" data-a="pjopen" data-id="${pid}">プロジェクトにもどる</button>
+       <button class="btn g" data-a="home">あとで書く</button>`);
+  };
+})();
+
+/* ===== 設定に「プロジェクトギフト」と「記念カード」を足す ========== */
+(function(){
+  const base = V.settings;
+  V.settings = function(){
+    const h = base();
+    const n = projs().filter(p => !p.done).length;
+    const c = (S.cards || []).length;
+    const add = `
+  <p class="jlab m24">プロジェクトギフト</p>
+  <div class="card m12">
+    <div class="lb" style="font-size:15px;font-weight:800">目的から順番に贈る</div>
+    <p class="sub" style="margin:4px 0 0">目的 → 感情 → 好み → ギフト → 梱包 → その後。<br>
+    <b>全部やる必要はありません。途中でやめても戻れます。</b><br>
+    ${n ? `いま進行中：<b style="color:var(--accent)">${n}件</b>` : "まだありません"}</p>
+    <button class="btn s" style="margin-top:13px" data-a="pjlist">プロジェクトギフトをひらく</button>
+  </div>
+  <div class="card m12">
+    <div class="lb" style="font-size:15px;font-weight:800">記念カード</div>
+    <p class="sub" style="margin:4px 0 0">自分で決めた<b>目的</b>と、相手からの<b>感謝</b>を残します。<br>
+    ${c ? `保存：<b style="color:var(--accent)">${c}枚</b>` : "まだありません"}</p>
+    <button class="btn s" style="margin-top:13px" data-a="memories">記念カードをひらく</button>
+  </div>
+`;
+    return h.replace('<p class="jlab m24">お知らせ</p>', add + '  <p class="jlab m24">お知らせ</p>');
+  };
+
+  /* メニュー（三本線）にも足す */
+  const bd = drawer;
+  drawer = function(){
+    const h = bd();
+    if(!h) return h;
+    return h
+      .replace('<div class="sec">ギフトを贈る</div>',
+        '<div class="sec">ギフトを贈る</div>\n    <div class="mi" data-a="pjlist"><span class="e">' +
+        icon("plan",19) + '</span>プロジェクトギフト</div>')
+      .replace('<div class="mi" data-a="note">',
+        '<div class="mi" data-a="memories"><span class="e">' + icon("mail",19) +
+        '</span>記念カード</div>\n    <div class="mi" data-a="note">');
+  };
+})();
+
+/* ===== 受け取った人を、感謝カードへ誘う ============================= */
+(function(){
+  const base = V.feeldone;
+  V.feeldone = function(){
+    return base().replace('<button class="btn m24" data-a="home">自分も使ってみる</button>',
+      `<button class="btn m24" data-a="thanks">感謝のカードを送る</button>
+       <button class="btn g" data-a="home">自分も使ってみる</button>`);
+  };
+})();
+
+/* ===== 記念カードに「自分が決めた目的」も並べる ===================== */
+(function(){
+  const base = V.memories;
+  V.memories = function(){
+    const h = base();
+    const mine = S.gifts.filter(g => g.purpose);
+    if(!mine.length) return h;
+    const list = mine.slice(0,6).map(g => {
+      const em = Object.keys(g.emotions || {}).filter(k => g.emotions[k] > 0)
+        .map(k => (SEVEN.find(e => e.id === k) || {}).name + "・" + LV[g.emotions[k]]).join("／");
+      return `<div class="pj" style="cursor:default">
+        <div class="ttl">${esc(g.sentAt || "")}　${esc(friend(g.toId).name)}さんへ</div>
+        <div class="sb">目的：<b>${esc(PUR(g.purpose).name)}</b>${em ? `<br>伝えたかった気持ち：${esc(em)}` : ""}
+        <br>贈ったもの：${esc(g.gift.name)}</div></div>`;
+    }).join("");
+    return h.replace(/<\/div>\s*$/, `<p class="jlab m24">自分が決めた目的</p>
+  <div class="m12">${list}</div>
+</div>`);
+  };
+})();
+
+/* ===== 診断リンク（?diag=1）で来た人は、すぐ診断を始める ============ */
+setTimeout(function(){
+  const q = new URLSearchParams(location.search);
+  if(q.get("diag") !== "1") return;
+  if(!S.user) S = seed("ゲスト");
+  S.diag = null; S.diagTmp = null; S.dhist = []; S.dq = 0;
+  S.dsc = { keep:0, self:0, use:0, novel:0, exp:0, sweet:0, arom:0, alc:0, price:0, honest:0, word:0, back:0 };
+  S.session.in = true;
+  save(); go("diag");
+}, 40);
+
+/* ===== ⑥ もらった感想を、サーバーにも送る ========================== */
+(function(){
+  const prev = act;
+  act = function(d){
+    if(d.a === "feelsave" && S.gtoken && typeof sbFeelGift === "function"){
+      const t = document.getElementById("feelt");
+      const pick = (S.feelPick || []).slice();
+      const text = t ? t.value.trim() : "";
+      const anon = (S.feelAnon !== false);
+      sbFeelGift(S.gtoken, pick, text, anon).then(ok => {
+        if(!ok) console.warn("感想をサーバーに保存できませんでした");
+      });
+    }
+    return prev(d);
+  };
+})();
+
+/* ===== 届いた感謝カードを、記念カードに取り込む ==================== */
+async function pullThanks(){
+  if(typeof sbFetchThanks !== "function" || !sbOn()) return;
+  const rows = await sbFetchThanks();
+  if(!rows.length) return;
+  S.cards = S.cards || [];
+  let add = 0;
+  rows.forEach(r => {
+    if(S.cards.some(c => c.sid === r.id)) return;
+    const g = S.gifts.find(x => x.sid === r.gift_id);
+    S.cards.unshift({
+      sid: r.id, at: (r.created_at || "").slice(0,10),
+      to: g ? friend(g.toId).name : "",
+      from: r.from_name || "匿名",
+      msg: r.message || "", photo: r.photo || null,
+      purpose: (g && g.purpose) ? PUR(g.purpose).name : ""
+    });
+    add++;
+  });
+  if(add){ save(); draw(); }
+}
+setTimeout(pullThanks, 1800);
 
 /* 追加スタイル（購入フロー用） */
 (function(){
