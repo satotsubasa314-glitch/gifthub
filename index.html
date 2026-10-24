@@ -1360,113 +1360,262 @@ V.talk = function(){
 };
 
 /* ==================================================================
-   ★ ギフト診断・記念日リマインド・ギフト計画（プロジェクトギフト）
+   ギフト診断（12問・12タイプ）・記念日リマインド・ギフト計画
+   ■ v1.3 で拡張
+     ・8問2択 → 12問3〜4択
+     ・6タイプ → 12タイプ
+     ・アンケート（n=55）の結果を質問に反映
    ================================================================== */
 (function(){
   const s = document.createElement("style");
   s.textContent = `
   .qz{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--sh)}
-  .qz h2{font-size:19px;line-height:1.5}
-  .ab{width:100%;padding:17px;border:1.5px solid var(--line);border-radius:15px;background:var(--surface);
-      font-family:inherit;font-size:15.5px;font-weight:700;text-align:left;cursor:pointer;margin-top:10px;
-      transition:.15s;color:var(--ink);display:flex;align-items:center;gap:11px}
+  .qz h2{font-size:18.5px;line-height:1.55}
+  .qz .qn{font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.1em}
+  .ab{width:100%;padding:15px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);
+      font-family:inherit;font-size:15px;font-weight:700;text-align:left;cursor:pointer;margin-top:9px;
+      transition:.15s;color:var(--ink);display:flex;align-items:center;gap:11px;line-height:1.55}
   .ab:active{transform:scale(.99)}
-  .ab b{flex:0 0 30px;height:30px;border-radius:9px;background:var(--soft);color:var(--accent);
-        display:grid;place-items:center;font-size:14px}
+  .ab b{flex:0 0 26px;height:26px;border-radius:8px;background:var(--soft);color:var(--accent);
+        display:grid;place-items:center;font-size:12.5px}
   .ab:hover{border-color:var(--accent)}
   .tc{background:var(--grad);color:#fff;border-radius:24px;padding:28px 22px;text-align:center;
-      box-shadow:0 18px 44px rgba(224,97,74,.3);position:relative;overflow:hidden}
-  .tc::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 12%,rgba(255,255,255,.22),transparent 60%)}
+      box-shadow:0 18px 44px rgba(176,80,60,.3);position:relative;overflow:hidden}
+  .tc::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 12%,rgba(255,255,255,.2),transparent 60%)}
   .tc>*{position:relative}
-  .tc .ic{font-size:58px;line-height:1}
-  .tc .nm{font-size:25px;font-weight:800;margin-top:8px;letter-spacing:-.02em}
-  .tc .sb{font-size:13.5px;opacity:.9;margin-top:6px;line-height:1.7}
-  .tc .bx{background:rgba(255,255,255,.2);border-radius:15px;padding:14px;margin-top:17px;text-align:left;font-size:13.5px;line-height:1.8}
+  .tc .ic{line-height:0;margin-bottom:4px}
+  .tc .cd{font-size:11px;font-weight:800;letter-spacing:.2em;opacity:.8}
+  .tc .nm{font-size:25px;font-weight:800;margin-top:6px;letter-spacing:-.02em;line-height:1.35}
+  .tc .sb{font-size:13.5px;opacity:.92;margin-top:8px;line-height:1.75}
+  .tc .bx{background:rgba(255,255,255,.18);border-radius:15px;padding:15px;margin-top:17px;
+          text-align:left;font-size:13.5px;line-height:1.85}
+  .tc .bx .k{font-size:10.5px;font-weight:800;letter-spacing:.1em;opacity:.8;display:block}
+  .bars{margin-top:16px}
+  .bar4{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12px}
+  .bar4 .l{flex:0 0 70px;text-align:right;color:var(--muted);font-weight:700}
+  .bar4 .r{flex:0 0 70px;color:var(--muted);font-weight:700}
+  .bar4 .t{flex:1;height:7px;border-radius:4px;background:var(--line);position:relative}
+  .bar4 .t i{position:absolute;top:-3px;width:13px;height:13px;border-radius:50%;
+             background:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.2)}
   .st{display:flex;gap:11px;align-items:flex-start;padding:13px;border:1.5px solid var(--line);
       border-radius:14px;background:var(--surface);margin-bottom:9px;cursor:pointer}
-  .st.ok{background:var(--okbg);border-color:rgba(62,122,88,.3)}
+  .st.ok{background:var(--okbg);border-color:rgba(62,107,82,.3)}
   .st .ck{flex:0 0 24px;height:24px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;
-          font-size:13px;color:#fff;margin-top:1px}
+          color:#fff;margin-top:1px}
   .st.ok .ck{background:var(--ok);border-color:var(--ok)}
   .st .tt{flex:1;font-size:14.5px;font-weight:700;line-height:1.55}
   .st.ok .tt{text-decoration:line-through;opacity:.6}
-  .st .dd{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px}
   `;
   document.head.appendChild(s);
 })();
 
-/* ===== ギフト診断（8問） ============================================
-   軸： keep(残る/消える) / self(自分で選ぶ/選んでほしい)
-        use(実用/気分) / new(定番/珍しい)
+/* ===== 診断の質問（12問） ===========================================
+   軸：
+     keep  残る ↔ 消える
+     self  自分で選びたい ↔ 選んでほしい
+     use   実用 ↔ 気分
+     novel 定番 ↔ 珍しい
+     exp   モノ ↔ 体験
+     price 高くてOK ↔ 気をつかう
+     honest 正直に言える ↔ 言えない   ← アンケートQ7（39/54が言わない）から
+     word  気持ちの言葉が欲しい ↔ 要らない ← アンケートQ5から
+     sweet / arom / alc  好き嫌い
+     back  反応を返したい ↔ 返したくない ← アンケートQ8から
    =================================================================== */
 const DQ = [
-  { q:"もらってうれしいのは、どちらに近いですか？",
-    a:[["ずっと残るもの","keep+"],["食べたり使ったりして無くなるもの","keep-"]] },
-  { q:"プレゼントは、どちらがうれしいですか？",
-    a:[["自分で選びたい（カタログや選べるギフト）","self+"],["相手に選んでほしい","self-"]] },
-  { q:"どちらをもらうことが多いと、助かりますか？",
-    a:[["毎日つかえる実用的なもの","use+"],["気分が上がるもの・ちょっと贅沢なもの","use-"]] },
-  { q:"どちらに惹かれますか？",
-    a:[["定番で間違いのないもの","new-"],["見たことがない珍しいもの","new+"]] },
-  { q:"甘いものは好きですか？",
-    a:[["好き","sweet+"],["苦手・あまり食べない","sweet-"]] },
-  { q:"香りのあるもの（お香・アロマ・香水）は？",
-    a:[["好き","arom+"],["苦手・好みが強い","arom-"]] },
-  { q:"高めのプレゼントをもらったら？",
-    a:[["素直にうれしい","price+"],["気をつかってしまう","price-"]] },
-  { q:"最後に。どちらがうれしいですか？",
-    a:[["モノをもらう","exp-"],["どこかへ行く・体験する","exp+"]] }
+  { q:"もらってうれしいのは、どちらに近いですか？", a:[
+    ["ずっと残るもの","keep+2"],
+    ["どちらかといえば残るもの","keep+1"],
+    ["どちらかといえば消えるもの","keep-1"],
+    ["食べたり使ったりして無くなるもの","keep-2"]] },
+
+  { q:"プレゼントの選び方で、うれしいのは？", a:[
+    ["自分で選びたい（カタログなど）","self+2"],
+    ["候補をいくつか見せてほしい","self+1"],
+    ["相手に選んでほしい","self-2"]] },
+
+  { q:"どちらをもらうと、助かりますか？", a:[
+    ["毎日つかえる実用的なもの","use+2"],
+    ["たまに使う、ちょっといいもの","use+1"],
+    ["気分が上がるもの・贅沢なもの","use-2"]] },
+
+  { q:"どちらに惹かれますか？", a:[
+    ["定番で、間違いのないもの","novel-2"],
+    ["すこし珍しいもの","novel+1"],
+    ["見たことがない、話のタネになるもの","novel+2"]] },
+
+  { q:"最後に。どちらがうれしいですか？", a:[
+    ["モノをもらう","exp-2"],
+    ["どちらかといえばモノ","exp-1"],
+    ["どちらかといえば体験","exp+1"],
+    ["どこかへ行く・体験する","exp+2"]] },
+
+  { q:"甘いものは好きですか？", a:[
+    ["好き","sweet+2"],
+    ["ふつう","sweet+0"],
+    ["あまり食べない","sweet-2"]] },
+
+  { q:"香りのあるもの（お香・アロマ・香水）は？", a:[
+    ["好き","arom+2"],
+    ["ふつう","arom+0"],
+    ["苦手・好みが強い","arom-2"]] },
+
+  { q:"お酒は飲みますか？", a:[
+    ["よく飲む","alc+2"],
+    ["たまに飲む","alc+1"],
+    ["飲まない","alc-2"]] },
+
+  { q:"高めのプレゼントをもらったら、どう感じますか？", a:[
+    ["素直にうれしい","price+2"],
+    ["うれしいけど、少し気になる","price+0"],
+    ["お返しを考えてしまう","price-2"]] },
+
+  /* ↓ ここからアンケート（n=55）を反映した3問 */
+  { q:"もらったものが、正直あまり好みでなかったとき。<br>あなたは相手に伝えますか？", a:[
+    ["正直に伝える","honest+2"],
+    ["言わないけど、態度に出る","honest+0"],
+    ["「うれしい」と言って、本当のことは言わない","honest-2"]] },
+
+  { q:"ギフトに「選んだ理由のひと言」が添えられていたら？", a:[
+    ["うれしい","word+2"],
+    ["少し照れるけど、悪くない","word+1"],
+    ["相手によって、大きく変わる","word+0"],
+    ["重い・気をつかう","word-2"]] },
+
+  { q:"贈ってくれた人に、「使ったよ」と返すことについて。", a:[
+    ["すすんで返したい","back+2"],
+    ["聞かれたら返す","back+1"],
+    ["正直、めんどう","back-2"]] }
 ];
 
+/* ===== 12タイプ ==================================================== */
 const DTYPES = {
-  jitsu:{ ic:"home", name:"毎日つかう派", sub:"実用的で、生活の中で出番があるものが好き。",
+  jitsu:   { ic:"home",    code:"DAILY",   name:"毎日つかう派",
+    sub:"実用的で、生活の中で出番があるものが好き。",
     like:["ホームリビング","タオル・ハンカチ","飲料・お酒"], avoid:["雑貨"],
     likeId:["home","towel","drink"], avoidId:["goods"],
     tip:"「使い道があるか」で選ぶと喜ばれます。消耗品なら、かぶっても困りません。" },
-  kie:{ ic:"sweets", name:"消えもの派", sub:"残らないほうが気楽。食べ物・飲み物がうれしい。",
+
+  kie:     { ic:"sweets",  code:"VANISH",  name:"消えもの派",
+    sub:"残らないほうが気楽。食べ物・飲み物がうれしい。",
     like:["スイーツ","グルメ","飲料・お酒"], avoid:["ホームリビング","雑貨"],
     likeId:["sweets","gourmet","drink"], avoidId:["home","goods"],
     tip:"置き場所に困らせません。日持ちだけ気をつけてください。" },
-  toki:{ ic:"spark", name:"ときめき派", sub:"自分では買わない、少し贅沢なものに弱い。",
+
+  toki:    { ic:"spark",   code:"SPARK",   name:"ときめき派",
+    sub:"自分では買わない、少し贅沢なものに弱い。",
     like:["フレグランス・コスメ","スイーツ","雑貨"], avoid:["ホームリビング"],
     likeId:["beauty","sweets","goods"], avoidId:["home"],
     tip:"実用性より「気分が上がるか」。見た目も大事にしてください。" },
-  taiken:{ ic:"exp", name:"体験派", sub:"モノより思い出。どこかへ行けるものがうれしい。",
+
+  taiken:  { ic:"exp",     code:"MEMORY",  name:"体験派",
+    sub:"モノより思い出。どこかへ行けるものがうれしい。",
     like:["体験"], avoid:["雑貨","ホームリビング"],
     likeId:["exp"], avoidId:["goods","home"],
-    tip:"一緒に行けるものだと、さらに喜ばれます。" },
-  kodawari:{ ic:"catalog", name:"自分で選びたい派", sub:"選ぶ楽しさも含めてギフト。外されるのが少し怖い。",
+    tip:"一緒に行けるものだと、さらに喜ばれます。有効期限だけ確認を。" },
+
+  kodawari:{ ic:"catalog", code:"CHOOSE",  name:"自分で選びたい派",
+    sub:"選ぶ楽しさも含めてギフト。外されるのが少し怖い。",
     like:["カタログギフト","体験"], avoid:["フレグランス・コスメ"],
     likeId:["catalog","exp"], avoidId:["beauty"],
-    tip:"カタログギフトや、◯×で好みを聞いてから贈るのが安全です。" },
-  teiban:{ ic:"towel", name:"定番あんしん派", sub:"珍しさより、間違いのない定番がうれしい。",
+    tip:"カタログギフトが最適です。◯×で好みを聞いてから贈るのも効きます。" },
+
+  teiban:  { ic:"towel",   code:"CLASSIC", name:"定番あんしん派",
+    sub:"珍しさより、間違いのない定番がうれしい。",
     like:["タオル・ハンカチ","スイーツ","飲料・お酒"], avoid:["雑貨"],
     likeId:["towel","sweets","drink"], avoidId:["goods"],
-    tip:"冒険しないほうが喜ばれます。質のいい定番を。" }
+    tip:"冒険しないほうが喜ばれます。質のいい定番を。" },
+
+  /* ↓ ここから新しく足した6タイプ */
+  tansaku: { ic:"search",  code:"EXPLORE", name:"めずらしもの好き",
+    sub:"見たことがないものに弱い。話のタネになると、なおよし。",
+    like:["グルメ","体験","フレグランス・コスメ"], avoid:["タオル・ハンカチ"],
+    likeId:["gourmet","exp","beauty"], avoidId:["towel"],
+    tip:"定番を外して大丈夫な、めずらしいタイプ。産地や作り手の話を添えると喜ばれます。" },
+
+  kiduka:  { ic:"heal",    code:"MODEST",  name:"気をつかわせたくない派",
+    sub:"高いものだと、お返しを考えてしまう。軽いものが安心。",
+    like:["スイーツ","飲料・お酒","タオル・ハンカチ"], avoid:["体験","ホームリビング"],
+    likeId:["sweets","drink","towel"], avoidId:["exp","home"],
+    tip:"★2,000円前後がちょうどよい相手です。高すぎると負担になります。" },
+
+  sunao:   { ic:"chat",    code:"HONEST",  name:"はっきり言える派",
+    sub:"好みでなければ正直に言える。だから外しても大丈夫。",
+    like:["グルメ","ホームリビング","体験"], avoid:[],
+    likeId:["gourmet","home","exp"], avoidId:[],
+    tip:"★めずらしいタイプです。思い切って挑戦しても、ちゃんと教えてくれます。" },
+
+  kotoba:  { ic:"mail",    code:"WORDS",   name:"ことばを喜ぶ派",
+    sub:"モノより、添えられたひと言のほうがうれしい。",
+    like:["スイーツ","タオル・ハンカチ","雑貨"], avoid:[],
+    likeId:["sweets","towel","goods"], avoidId:[],
+    tip:"★ここが一番大事です。高いものより、ちゃんとした手紙のほうが効きます。" },
+
+  shizuka: { ic:"note",    code:"QUIET",   name:"そっとしておいて派",
+    sub:"気持ちの言葉は、すこし重く感じる。モノだけで十分。",
+    like:["グルメ","飲料・お酒","ホームリビング"], avoid:["雑貨"],
+    likeId:["gourmet","drink","home"], avoidId:["goods"],
+    tip:"★長い手紙は逆効果かもしれません。ひと言か、言葉なしで。" },
+
+  nomi:    { ic:"drink",   code:"TOAST",   name:"飲みもの派",
+    sub:"お酒やコーヒーが、いちばん間違いない。",
+    like:["飲料・お酒","グルメ","スイーツ"], avoid:["雑貨","フレグランス・コスメ"],
+    likeId:["drink","gourmet","sweets"], avoidId:["goods","beauty"],
+    tip:"消えものなので、かぶっても困りません。好きな銘柄を聞けると完璧です。" }
 };
 const DT = id => DTYPES[id] || DTYPES.jitsu;
 
-function diagType(sc){
-  if(sc.exp > 0) return "taiken";
-  if(sc.self > 0) return "kodawari";
-  if(sc.keep < 0) return "kie";
-  if(sc.use > 0) return "jitsu";
-  if(sc.new < 0) return "teiban";
+/* 判定（上から順に見て、最初に当てはまったタイプ） */
+function diagType(s){
+  const g = k => s[k] || 0;
+  if(g("word") <= -2)                     return "shizuka";
+  if(g("word") >= 2 && g("use") <= 0)     return "kotoba";
+  if(g("honest") >= 2)                    return "sunao";
+  if(g("price") <= -2 && g("keep") < 0)   return "kiduka";
+  if(g("exp") >= 2)                       return "taiken";
+  if(g("self") >= 2)                      return "kodawari";
+  if(g("novel") >= 2)                     return "tansaku";
+  if(g("alc") >= 2 || (g("keep") <= -2 && g("sweet") <= -2)) return "nomi";
+  if(g("keep") <= -1)                     return "kie";
+  if(g("use") >= 2)                       return "jitsu";
+  if(g("novel") <= -2)                    return "teiban";
   return "toki";
 }
-/* 診断結果から、商品のおすすめ度を出す */
+
+/* 商品のおすすめ度 */
 function diagScore(diag, g){
   if(!diag) return 0;
-  const t = DT(diag.type);
+  const t = DT(diag.type), sc = diag.sc || {};
   let s = 0;
   if((t.likeId||[]).indexOf(g.cat) >= 0) s += 3;
   if((t.avoidId||[]).indexOf(g.cat) >= 0) s -= 4;
-  const sc = diag.sc || {};
-  if(sc.sweet < 0 && g.cat === "sweets") s -= 3;
-  if(sc.arom  < 0 && g.cat === "beauty") s -= 2;
-  if(sc.price < 0 && g.price >= 3000) s -= 2;
-  if(sc.exp   > 0 && g.cat === "exp") s += 2;
+  if((sc.sweet||0) < 0 && g.cat === "sweets") s -= 3;
+  if((sc.arom||0)  < 0 && g.cat === "beauty") s -= 3;
+  if((sc.alc||0)   < 0 && g.cat === "drink")  s -= 1;
+  if((sc.alc||0)   > 0 && g.cat === "drink")  s += 2;
+  if((sc.price||0) < 0 && g.price >= 3000) s -= 3;
+  if((sc.price||0) > 0 && g.price >= 3000) s += 1;
+  if((sc.exp||0)   > 0 && g.cat === "exp") s += 2;
+  if((sc.self||0)  > 0 && g.cat === "catalog") s += 3;
+  if((sc.keep||0)  < 0 && (g.cat === "sweets" || g.cat === "gourmet")) s += 1;
   return s;
+}
+
+/* 4本の軸を棒で見せる */
+function diagBars(sc){
+  const ax = [
+    ["消えもの","残るもの","keep"],
+    ["おまかせ","自分で選ぶ","self"],
+    ["気分","実用","use"],
+    ["モノ","体験","exp"]
+  ];
+  return `<div class="bars">${ax.map(a=>{
+    const v = Math.max(-3, Math.min(3, sc[a[2]] || 0));
+    const pct = ((v + 3) / 6) * 100;
+    return `<div class="bar4"><span class="l">${a[0]}</span>
+      <span class="t"><i style="left:calc(${pct}% - 6px)"></i></span>
+      <span class="r">${a[1]}</span></div>`;
+  }).join("")}</div>`;
 }
 
 /* ===== 画面：診断 =================================================== */
@@ -1474,49 +1623,62 @@ V.diag = function(){
   const i = S.dq || 0;
   if(i >= DQ.length) return V.diagres();
   const q = DQ[i];
+  const AB = ["A","B","C","D"];
   return `
 <div class="scr">
   <div class="prog"><i style="width:${Math.round(i/DQ.length*100)}%"></i></div>
-  <p class="jlab">ギフト診断　${i+1} / ${DQ.length}</p>
-  <div class="qz m16">
-    <h2>${esc(q.q)}</h2>
+  <p class="jlab">ギフト診断</p>
+  <div class="qz m12">
+    <p class="qn">QUESTION ${i+1} / ${DQ.length}</p>
+    <h2 style="margin-top:6px">${q.q}</h2>
     ${q.a.map((x,n)=>`<button class="ab" data-a="dq" data-v="${esc(x[1])}">
-      <b>${n===0?"A":"B"}</b><span>${esc(x[0])}</span></button>`).join("")}
+      <b>${AB[n]}</b><span>${esc(x[0])}</span></button>`).join("")}
   </div>
   <p class="sub" style="font-size:12px">深く考えなくて大丈夫です。<b>直感で選んでください。</b></p>
-  ${i>0?`<button class="btn g m16" data-a="dback">‹ ひとつ戻る</button>`:`<button class="btn g m16" data-a="home">やめる</button>`}
+  ${i>0?`<button class="btn g m16" data-a="dback">‹ ひとつ戻る</button>`
+       :`<button class="btn g m16" data-a="home">やめる</button>`}
 </div>`;
 };
 
 V.diagres = function(){
-  const d = S.diag || S.diagTmp; if(!d) return V.home();
-  const t = DT(d.type);
-  const url = location.origin + location.pathname + "?d=" + pack({ n:S.user?S.user.name:"だれか", t:d.type, s:d.sc });
+  const d = S.diagTmp || S.diag; if(!d) return V.home();
+  const t = DT(d.type), sc = d.sc || {};
+  const url = location.origin + location.pathname + "?d=" + pack({ n:S.user?S.user.name:"だれか", t:d.type, s:sc });
+  const recs = GIFTS.map(g=>({g,s:diagScore(d,g)})).sort((a,b)=>b.s-a.s).slice(0,3).map(x=>x.g);
   return `
 <div class="scr">
   <p class="jlab">ギフト診断の結果</p>
   <div class="tc m12">
-    <div class="ic">${icon(t.ic,46,1.3)}</div>
+    <div class="ic">${icon(t.ic,44,1.3)}</div>
+    <div class="cd">${t.code}</div>
     <div class="nm">${t.name}</div>
     <div class="sb">${esc(t.sub)}</div>
     <div class="bx">
-      <b>うれしいもの</b><br>${t.like.join("・")}<br><br>
-      <b>すこし苦手</b><br>${t.avoid.join("・")}${d.sc.sweet<0?"・甘いもの":""}${d.sc.arom<0?"・香りの強いもの":""}<br><br>
-      <b>予算の感じ方</b><br>${d.sc.price<0?"高いと気をつかってしまう":"高くても素直にうれしい"}
+      <span class="k">うれしいもの</span>${t.like.join("・")}<br><br>
+      <span class="k">すこし苦手</span>${(t.avoid.length?t.avoid.join("・"):"とくになし")}${(sc.sweet||0)<0?"・甘いもの":""}${(sc.arom||0)<0?"・香りの強いもの":""}${(sc.alc||0)<0?"・お酒":""}<br><br>
+      <span class="k">予算の感じ方</span>${(sc.price||0)<0?"高いと、お返しを考えてしまう":(sc.price||0)>0?"高くても素直にうれしい":"ふつう"}<br><br>
+      <span class="k">ひと言そえられると</span>${(sc.word||0)>=2?"うれしい":(sc.word||0)<=-2?"すこし重い":"相手による"}
     </div>
   </div>
+  ${diagBars(sc)}
   <div class="card m16" style="background:#FAF6F2;border-color:transparent">
     <p class="jlab">贈る人へのヒント</p>
     <p style="font-size:14.5px;margin-top:6px">${esc(t.tip)}</p>
   </div>
+  <p class="jlab m24">このタイプに合うギフト</p>
+  <div class="m12">${recs.map(g=>`
+    <div class="item" data-a="gdetail" data-id="${g.id}">
+      <div class="ic">${gicon(g)}</div>
+      <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div></div>
+    </div>`).join("")}</div>
   <h2 class="m24">このカードを配っておくと</h2>
   <p class="sub">友だちは<b>あなたの好みを知った上で</b>選べます。<br>
   「何がほしい？」と聞かれる気まずさも、なくなります。</p>
   <div class="url m12">${esc(url)}</div>
   <button class="btn m12" data-a="copy" data-v="${esc(url)}">リンクをコピーする</button>
   <button class="btn o" data-a="openr" data-v="${esc(url)}">▸ 友だちに見える画面（デモ用）</button>
-  ${S.diag?`<button class="btn g" data-a="home">ホームへ</button>`
-          :`<button class="btn s" data-a="dsave">この結果を保存する</button>`}
+  ${S.diag && S.diag.type===d.type ? `<button class="btn g" data-a="home">ホームへ</button>`
+          : `<button class="btn s" data-a="dsave">この結果を保存する</button>`}
   <button class="btn g" data-a="dagain">もう一度やる</button>
 </div>`;
 };
@@ -1524,24 +1686,34 @@ V.diagres = function(){
 /* 友だちが診断カードを見る（ログイン不要） */
 V.dview = function(){
   const c = S.dbox; if(!c) return V.home();
-  const t = DT(c.t);
+  const t = DT(c.t), sc = c.s || {};
+  const recs = GIFTS.map(g=>({g,s:diagScore({type:c.t,sc:sc},g)})).sort((a,b)=>b.s-a.s).slice(0,3).map(x=>x.g);
   return `
 <div class="scr">
   <p class="jlab">${esc(c.n)}さんのギフトタイプ</p>
   <div class="tc m12">
-    <div class="ic">${icon(t.ic,46,1.3)}</div>
+    <div class="ic">${icon(t.ic,44,1.3)}</div>
+    <div class="cd">${t.code}</div>
     <div class="nm">${t.name}</div>
     <div class="sb">${esc(t.sub)}</div>
     <div class="bx">
-      <b>うれしいもの</b><br>${t.like.join("・")}<br><br>
-      <b>すこし苦手</b><br>${t.avoid.join("・")}${c.s&&c.s.sweet<0?"・甘いもの":""}${c.s&&c.s.arom<0?"・香りの強いもの":""}<br><br>
-      <b>予算の感じ方</b><br>${c.s&&c.s.price<0?"高いと気をつかってしまう":"高くても素直にうれしい"}
+      <span class="k">うれしいもの</span>${t.like.join("・")}<br><br>
+      <span class="k">すこし苦手</span>${(t.avoid.length?t.avoid.join("・"):"とくになし")}${(sc.sweet||0)<0?"・甘いもの":""}${(sc.arom||0)<0?"・香りの強いもの":""}${(sc.alc||0)<0?"・お酒":""}<br><br>
+      <span class="k">予算の感じ方</span>${(sc.price||0)<0?"高いと、お返しを考えてしまう":(sc.price||0)>0?"高くても素直にうれしい":"ふつう"}<br><br>
+      <span class="k">ひと言そえられると</span>${(sc.word||0)>=2?"うれしい":(sc.word||0)<=-2?"すこし重い":"相手による"}
     </div>
   </div>
+  ${diagBars(sc)}
   <div class="card m16" style="background:#FAF6F2;border-color:transparent">
     <p class="jlab">贈るときのヒント</p>
     <p style="font-size:14.5px;margin-top:6px">${esc(t.tip)}</p>
   </div>
+  <p class="jlab m24">このタイプに合うギフト</p>
+  <div class="m12">${recs.map(g=>`
+    <div class="item">
+      <div class="ic">${gicon(g)}</div>
+      <div class="m"><div class="nm">${esc(g.name)}</div><div class="pr">${yen(g.price)}</div></div>
+    </div>`).join("")}</div>
   <div class="card ok m16">
     <p style="font-size:14.5px"><b>${esc(c.n)}さんに贈りますか？</b><br>
     このタイプに合う候補を、すぐ出せます。</p>
@@ -1553,6 +1725,7 @@ V.dview = function(){
 
 /* ===== 記念日 ======================================================= */
 function upcomingBirthdays(){
+  if(S.ntBd === false) return [];
   const now = new Date();
   return S.friends.filter(f => f.bd).map(f => {
     const [m, d] = f.bd.split("-").map(Number);
@@ -1563,20 +1736,16 @@ function upcomingBirthdays(){
   }).filter(x => x.days <= 14).sort((a,b) => a.days - b.days);
 }
 
-/* ===== ギフト計画（プロジェクトギフト） ==============================
-   ユーザーの案：先にゴールを決めて、タスクのように進める
-   アンケートでは「決めさせる」入口は求められていなかったので、
-   誕生日まで日があるときの「任意の道具」として置いています。
-   =================================================================== */
+/* ===== ギフト計画 =================================================== */
 const PGOALS = ["元気になってほしい","ありがとうを伝えたい","また会いたい","お祝いしたい","仲直りしたい","応援したい"];
 function makeSteps(){
   return [
-    { t:"相手の好みを ◯× で聞く",       ok:false },
-    { t:"候補を3つにしぼる",             ok:false },
-    { t:"ひと言のメッセージを決める",     ok:false },
-    { t:"ラッピングを決める",             ok:false },
-    { t:"注文する",                       ok:false },
-    { t:"リンクを送る",                   ok:false }
+    { t:"相手の好みを ◯× で聞く",     ok:false },
+    { t:"候補を3つにしぼる",           ok:false },
+    { t:"ひと言のメッセージを決める",  ok:false },
+    { t:"ラッピングを決める",          ok:false },
+    { t:"注文する",                    ok:false },
+    { t:"リンクを送る",                ok:false }
   ];
 }
 
@@ -1584,10 +1753,9 @@ V.newplan = function(){
   const f = friend(S.draft.toId);
   const b = upcomingBirthdays().find(x => x.f.id === f.id);
   return `
-<div class="scr">
-  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="backPick">‹ もどる</button>
-  <p class="jlab">ギフト計画</p>
-  <h1 style="margin-top:3px">${esc(f.name)}さんに、<br>どうなってほしいですか？</h1>
+${header("ギフト計画")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">${esc(f.name)}さんに、<br>どうなってほしいですか？</h1>
   <p class="sub">先にゴールを決めると、<b>選ぶときに迷わなくなります。</b><br>
   ${b?`${esc(f.name)}さんの誕生日まで <b>あと${b.days}日</b>です。`:"日があるときほど、効きます。"}</p>
   <div class="chips">${PGOALS.map(g=>`
@@ -1595,6 +1763,7 @@ V.newplan = function(){
   <div class="fld m16"><label class="jlab">いつまでに？（任意）</label>
     <input id="pdue" placeholder="例：11/08" value="${esc(b?b.md.replace("-","/"):"")}"></div>
   <button class="btn" data-a="mkplan" ${S.pgoal?"":"disabled"}>計画をつくる</button>
+  <button class="btn g" data-a="backPick">もどる</button>
 </div>`;
 };
 
@@ -1603,19 +1772,18 @@ V.plan = function(){
   const f = friend(p.toId);
   const dn = p.steps.filter(s => s.ok).length;
   return `
-<div class="scr">
-  <button class="btn g" style="justify-content:flex-start;padding-left:0" data-a="home">‹ もどる</button>
-  <p class="jlab">ギフト計画</p>
-  <h1 style="margin-top:3px">${esc(f.name)}さんに<br>「${esc(p.goal)}」</h1>
+${header("ギフト計画")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">${esc(f.name)}さんに<br>「${esc(p.goal)}」</h1>
   <p class="sub">${p.due?`締切 ${esc(p.due)}　／　`:""}${dn} / ${p.steps.length} 完了</p>
-  <div class="prog m12"><i style="width:${Math.round(dn/p.steps.length*100)}%;background:#7B5EA7"></i></div>
+  <div class="prog m12"><i style="width:${Math.round(dn/p.steps.length*100)}%"></i></div>
   <div class="m16">${p.steps.map((s,i)=>`
     <div class="st ${s.ok?"ok":""}" data-a="ps" data-v="${i}">
-      <div class="ck">${s.ok?"✓":""}</div>
+      <div class="ck">${s.ok?icon("check",14,2.4):""}</div>
       <div><div class="tt">${esc(s.t)}</div></div>
     </div>`).join("")}</div>
   ${dn===p.steps.length?`<div class="card ok m16" style="text-align:center">
-    <div style="font-size:40px"></div>
+    <div style="color:var(--ok)">${icon("ok",38,1.4)}</div>
     <p style="font-size:15px;font-weight:800;margin-top:6px">計画どおり、やりきりました</p>
   </div>`:""}
   <button class="btn m16" data-a="toItems">贈るものを決める</button>
@@ -1623,31 +1791,31 @@ V.plan = function(){
 </div>`;
 };
 
-/* ===== AIの知識を追加（ギフトーク強化） ============================= */
+/* ===== AIの知識を追加 =============================================== */
 KB.push(
-  { k:["大和","やまと","ヤマト","どうぞ","dozo","antina","アンティナ"],
-    a:"<b>株式会社 大和（やまと）</b>は、長野県安曇野市のギフトの会社です（オンワードHDグループ）。\n\nタグラインは <b>「無数のきもちを、かたちに織り込む」</b>。\n直営の <b>antina gift studio</b> と、ソーシャルギフトの <b>dōzo</b> を持っています。\n\n<b>「ギフトをえらぶことは、誰かのことを一生懸命考えること」</b>——これは antina の言葉です。",
+  { k:["大和","やまと","ヤマト","どうぞ","dozo","antina","アンティナ","プレゼンターズ"],
+    a:"<b>株式会社 大和（やまと）</b>は、長野県安曇野市のギフトの会社です（オンワードHDグループ）。\n\nタグラインは <b>「無数のきもちを、かたちに織り込む」</b>。\n商品は <b>PRESENTERS ROOM（プレゼンターズルーム）</b> で買えます。\nソーシャルギフトの <b>dōzo</b> もあります。\n\n<b>「ギフトをえらぶことは、誰かのことを一生懸命考えること」</b>——これは antina の言葉です。",
     act:null },
   { k:["ラッピング","包装","のし","リボン","箱"],
     a:"包み方で、印象がかなり変わります。\n\n<b>・そのまま</b>　気を使わせたくないとき\n<b>・かんたん包装</b>　+110円。ふだんのギフトはこれで十分\n<b>・化粧箱入り</b>　+330円。きちんと見せたいとき\n<b>・のし（紅白蝶結び）</b>　+220円。お祝い・内祝い\n\n<b>蝶結びは「何度あってもうれしいこと」</b>に使います。結婚祝いは結び切りなので注意です。",
     act:null },
-  { k:["日持ち","賞味期限","消費期限","腐","冷蔵","冷凍"],
-    a:"食べ物を贈るときは、<b>日持ちが一番の落とし穴</b>です。\n\n<b>・3〜5日</b>　生菓子・ケーキ。<b>会える日に渡すのが向いています</b>\n<b>・2週間〜1か月</b>　焼き菓子。郵送でも安心\n<b>・半年以上</b>　コーヒー・お茶・乾麺。いつでも大丈夫\n\nこのアプリでは、<b>日持ちが短いものを選ぶと、ひと言が自動で変わります。</b>",
+  { k:["日持ち","賞味期限","消費期限","冷蔵","冷凍","生もの"],
+    a:"食べ物を贈るときは、<b>日持ちが一番の落とし穴</b>です。\n\n<b>・3〜5日</b>　生菓子・ケーキ。<b>会える日に渡すのが向いています</b>\n<b>・2週間〜1か月</b>　焼菓子。郵送でも安心\n<b>・半年以上</b>　コーヒー・お茶・乾麺。いつでも大丈夫\n\nこのアプリでは、<b>日持ちが短いものを選ぶと、ひと言が自動で変わります。</b>",
     act:null },
-  { k:["診断","タイプ","性格","好みが分から"],
-    a:"<b>ギフト診断</b>があります。8問・1分です。\n\n本人に答えてもらうと、<b>どんなギフトを喜ぶタイプか</b>が分かります。\n結果のリンクを配っておけば、<b>贈る人は最初から好みを知った状態</b>で選べます。\n\n「何がほしい？」と聞く気まずさが、なくなります。",
+  { k:["診断","タイプ","性格","好みが分から","何が好き"],
+    a:"<b>ギフト診断</b>があります。12問・2分です。\n\n本人に答えてもらうと、<b>12タイプのどれかが分かります。</b>\n結果のリンクを配っておけば、<b>贈る人は最初から好みを知った状態</b>で選べます。\n\n「何がほしい？」と聞く気まずさが、なくなります。",
     act:"diag" },
   { k:["誕生日","記念日","忘れ","リマインド","通知"],
     a:"このアプリは、<b>誕生日の2週間前にお知らせ</b>します。\n\n<b>早めに気づくほど、選べるものが増えます。</b>\n当日に気づくと、デジタルで贈れるものしか残りません。\n\nアンケートでも、こんな声がありました。\n<b>「記録した日時が近づくと（1か月〜2週間前）に教えてくれる機能」</b>",
     act:null },
-  { k:["予算","いくら","相場","値段","金額"],
-    a:"友人へのギフトは、<b>関係の近さで変わります</b>。\n\n<b>・職場や知り合い</b>　1,000〜2,000円\n<b>・友人</b>　3,000〜5,000円\n<b>・親しい友人・家族</b>　5,000円〜\n\n<b>高すぎると相手が気をつかいます。</b>お返しを考えさせてしまうからです。\n診断で「高いと気をつかう」と答えた人には、<b>高額なものを出さないようにしています。</b>\n\n※一般的な目安です。<b>出典のある数字ではありません。</b>",
+  { k:["カタログ","選べる","相手が選ぶ"],
+    a:"<b>カタログギフト</b>は、外すのが怖いときの最有力です。\n\n<b>・向いている</b>　好みが分からない相手、目上の人、内祝い\n<b>・注意</b>　「選ぶのが面倒」と感じる人もいます\n\n大和様のキャッチコピーは <b>「選べるを贈る」</b>。ここが主力です。\n診断で<b>「自分で選びたい派」</b>と出た人には、これが最適です。",
     act:null },
-  { k:["体験ギフト","チケット","食事券","旅行"],
-    a:"体験ギフトは <b>「会うきっかけ」になる</b> のが強みです。\n\n<b>・向いている</b>　しばらく会えていない友人、好みが分からない相手\n<b>・注意</b>　遠方の人、忙しい人（使えないと逆に負担）\n\n<b>有効期限と場所は必ず確認</b>してください。",
-    act:null },
-  { k:["お返し","内祝い","半返し","もらっ"],
+  { k:["お返し","内祝い","半返し"],
     a:"もらったものへのお返しは、<b>半分〜3分の1</b>が目安とされています。\n\n<b>同額を返すと「もう付き合いはいい」という意味</b>になる、という説もあります（地域差があります）。\n\nただ、<b>友人同士ならそこまで気にしない人が増えています。</b>関係性しだいです。",
+    act:null },
+  { k:["予算","いくら","相場","値段","金額"],
+    a:"友人へのギフトは、<b>関係の近さで変わります</b>。\n\n<b>・職場や知り合い</b>　1,000〜2,000円\n<b>・友人</b>　3,000〜5,000円\n<b>・親しい友人・家族</b>　5,000円〜\n\n<b>高すぎると相手が気をつかいます。</b>\n診断で「お返しを考えてしまう」と答えた人には、<b>高額なものを出さないようにしています。</b>\n\n※一般的な目安です。<b>出典のある数字ではありません。</b>",
     act:null },
   { k:["何を","決まらない","わからない","分からない","迷"],
     a:"決まらないときは、<b>選択肢を減らすのが一番効きます</b>。\n\nアンケートでも、<b>53人中23人が「候補が多すぎて決まらない」</b>と答えていました。\n\n<b>いちばん確実なのは、本人に聞くことです。</b>\nこのアプリなら、<b>何を贈るつもりかを隠したまま</b>、◯× で好みだけ聞けます。",
@@ -1817,11 +1985,16 @@ function act(d){
     }
 
     /* ===== ギフト診断 ===== */
-    case "diag": S.menu=false; S.dq = 0; S.dsc = { keep:0, self:0, use:0, new:0, sweet:0, arom:0, price:0, exp:0 };
+    case "diag": S.menu=false; S.dhist=[]; S.dq = 0; S.dsc = { keep:0, self:0, use:0, novel:0, exp:0, sweet:0, arom:0, alc:0, price:0, honest:0, word:0, back:0 };
                  S.diagTmp = null; save(); go("diag"); break;
     case "dq": {
-      const key = d.v.slice(0, -1), sign = d.v.slice(-1) === "+" ? 1 : -1;
-      S.dsc = S.dsc || {}; S.dsc[key] = (S.dsc[key] || 0) + sign;
+      /* d.v は "keep+2" のような形。キー＋符号＋強さ */
+      const m = String(d.v).match(/^([a-z]+)([+-])(\d)$/);
+      if(m){
+        const key = m[1], sign = (m[2] === "+" ? 1 : -1), mag = Number(m[3]);
+        S.dsc = S.dsc || {};
+        S.dsc[key] = (S.dsc[key] || 0) + sign * mag;
+      }
       S.dhist = (S.dhist || []).concat([d.v]);
       S.dq = (S.dq || 0) + 1;
       if(S.dq >= DQ.length){ S.diagTmp = { type: diagType(S.dsc), sc: S.dsc, at: today() }; }
@@ -1830,17 +2003,21 @@ function act(d){
     case "dback": {
       if((S.dq||0) <= 0) break;
       const last = (S.dhist||[]).pop();
-      if(last){ const k = last.slice(0,-1), s = last.slice(-1)==="+"?1:-1; S.dsc[k] -= s; }
+      if(last){
+        const m = String(last).match(/^([a-z]+)([+-])(\d)$/);
+        if(m){ S.dsc[m[1]] -= (m[2]==="+"?1:-1) * Number(m[3]); }
+      }
       S.dq--; S.diagTmp = null; save(); go("diag"); break;
     }
     case "dsave": {
       S.diag = S.diagTmp || S.diag;
       /* 自分の診断は、見本の友だちにも入れておく（デモで効果が見えるように） */
-      if(S.friends[0] && !S.friends[0].diag) S.friends[0].diag = "kie";
-      if(S.friends[1] && !S.friends[1].diag) S.friends[1].diag = "taiken";
+      if(S.friends[0] && !S.friends[0].diag) S.friends[0].diag = "kotoba";
+      if(S.friends[1] && !S.friends[1].diag){ S.friends[1].diag = "taiken"; }
+      if(S.friends[2] && !S.friends[2].diag){ S.friends[2].diag = "kiduka"; }
       save(); go("home"); break;
     }
-    case "dagain": S.dq = 0; S.dsc = { keep:0, self:0, use:0, new:0, sweet:0, arom:0, price:0, exp:0 };
+    case "dagain": S.dq = 0; S.dsc = { keep:0, self:0, use:0, novel:0, exp:0, sweet:0, arom:0, alc:0, price:0, honest:0, word:0, back:0 };
                    S.dhist = []; S.diagTmp = null; save(); go("diag"); break;
     case "mycard": S.diagTmp = S.diag; save(); go("diagres"); break;
 
