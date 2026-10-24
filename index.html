@@ -2020,7 +2020,7 @@ draw = function(){
 /* ▼ ここに Supabase の情報を入れます（anonキーは公開前提なので安全です） */
 const SB_CFG = {
   url: "https://zvhrnkournupunqlaxsy.supabase.co",
-  key: ""   /* ★ anon public キーをここに貼ると、サーバー連携が有効になります */
+  key: "sb_publishable_tR5e6X7SoU49Sx5v_Rk_AQ_fkQMtKxj"   /* anon public キー（公開前提。RLSで守っています） */
 };
 
 let sb = null;          /* Supabaseクライアント */
@@ -2455,6 +2455,251 @@ setTimeout(async () => {
   await sbSync();
   draw();
 }, 0);
+
+/* ==================================================================
+   ⑥ その後 ── 双方の理由を書き、並べて見せる
+   ------------------------------------------------------------------
+   ■ ユーザーの指示（10_プロジェクトギフト仕様.md 6章）
+     「送り主は、どうしてそのギフトを送ったのか、
+       受け取り手はそのギフトをもらってどうだったのか（匿名でもいえるように）を書く」
+     「受け取り手の感情と、送り手の感情で、ズレがある可能性があるから」
+     「次にギフトを選ぶ際に、双方の意見を見ることができる」
+
+   ■ アンケート n=55 の裏づけ
+     ・39/54人が「ありがとうと言って、本当のことは言わない」
+     ・「正直に伝える」は2人だけ
+     → だから【匿名】にします。名前が出ると、また本音が消えます
+   ================================================================== */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+  .vs{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+  .vs .side{border-radius:16px;padding:15px;font-size:14px;line-height:1.8}
+  .vs .give{background:var(--soft);border:1px solid rgba(176,80,60,.25)}
+  .vs .take{background:var(--okbg);border:1px solid rgba(62,107,82,.25)}
+  .vs .ttl{font-size:10.5px;font-weight:800;letter-spacing:.1em;margin-bottom:6px;display:block}
+  .vs .give .ttl{color:var(--accent)}
+  .vs .take .ttl{color:var(--ok)}
+  .vs .gap{text-align:center;font-size:11.5px;font-weight:800;color:var(--muted);
+           padding:4px 0;letter-spacing:.06em}
+  .anon{display:flex;align-items:center;gap:10px;padding:13px;border:1.5px solid var(--line);
+        border-radius:13px;background:#FAF7F4;cursor:pointer;margin-top:10px;font-size:14px;font-weight:700}
+  .anon input{width:20px;height:20px;flex:0 0 20px}
+  .voices{border:1px solid var(--line);border-radius:16px;padding:15px;background:var(--surface);margin-top:10px}
+  .voices .v{padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.75}
+  .voices .v:last-child{border-bottom:0}
+  .voices .who{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--muted)}
+  .voices .who.g{color:var(--accent)}
+  .voices .who.t{color:var(--ok)}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ===== 贈った理由（贈る側が、注文のあとに書く） ===================== */
+const WHYS = [
+  "前に話していたのを覚えていたから",
+  "最近がんばっているのを知っているから",
+  "好きだと言っていたから",
+  "自分が使ってよかったから",
+  "かぶらなさそうだったから",
+  "予算のなかで一番いいと思ったから"
+];
+
+V.why = function(){
+  const o = S.gifts.find(x => x.id === S.whyId); if(!o) return V.home();
+  const f = friend(o.toId);
+  return `
+${header("贈った理由")}
+<div class="scr" style="padding-top:18px">
+  <h1 style="font-size:21px">どうして、これを<br>選んだのですか？</h1>
+  <p class="sub"><b>${esc(f.name)}さん</b>に「${esc(o.gift.name)}」を贈りました。<br>
+  ここに書いた理由は、<b style="color:var(--accent)">相手の感想と並べて記録されます。</b></p>
+  <div class="card m16" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">近いものをタップ（いくつでも）</p>
+    <div class="chips">${WHYS.map(w=>`
+      <button class="chip ${(S.whyPick||[]).includes(w)?"on":""}" data-a="whyp" data-v="${esc(w)}">${esc(w)}</button>`).join("")}</div>
+  </div>
+  <div class="fld m16"><label class="jlab">自分の言葉で（任意）</label>
+    <textarea id="whyt" rows="3" placeholder="例：去年おなじものをもらって、うれしかったから">${esc(S.whyText||"")}</textarea></div>
+  <p class="sub" style="font-size:12px">相手には、贈ったときのメッセージだけが届きます。<br>
+  <b>ここに書いた理由は、相手の感想が返ってきてから一緒に見られます。</b></p>
+  <button class="btn m16" data-a="whysave">記録する</button>
+  <button class="btn g" data-a="home">あとで書く</button>
+</div>`;
+};
+
+/* ===== もらった感想（受け取り側・匿名にできる） ===================== */
+const FEELS = [
+  "うれしかった",
+  "びっくりした",
+  "ちょうどほしかった",
+  "気をつかわせたかも",
+  "自分では選ばないものだった",
+  "正直、使い道に迷った"
+];
+
+V.feel = function(){
+  const p = S.inbox; if(!p) return V.home();
+  return `
+<div class="scr">
+  <div class="card ok" style="text-align:center">
+    <div style="color:var(--ok)">${icon("ok",40,1.4)}</div>
+    <h2 style="margin-top:8px">返事を送りました</h2>
+  </div>
+  <h1 class="m24" style="font-size:21px">もうひとつだけ。<br>もらって、どうでしたか？</h1>
+  <p class="sub"><b style="color:var(--accent)">ここは匿名にできます。</b><br>
+  正直に書いてもらえるほど、次のギフトがよくなります。</p>
+  <div class="card m16" style="background:#FAF6F2;border-color:transparent">
+    <p class="jlab">近いものをタップ（いくつでも）</p>
+    <div class="chips">${FEELS.map(w=>`
+      <button class="chip ${(S.feelPick||[]).includes(w)?"on":""}" data-a="feelp" data-v="${esc(w)}">${esc(w)}</button>`).join("")}</div>
+  </div>
+  <div class="fld m16"><label class="jlab">自分の言葉で（任意）</label>
+    <textarea id="feelt" rows="3" placeholder="例：うれしかったけど、量が多くて食べきれなかった"></textarea></div>
+  <label class="anon" data-a="anonck">
+    <input type="checkbox" id="anonck" ${S.feelAnon!==false?"checked":""}>
+    <span>名前を出さずに送る（匿名）</span>
+  </label>
+  <p class="sub" style="font-size:11.5px">※アンケートでは、<b>54人中39人が「本当のことは言わない」</b>と答えました。<br>
+  だから、ここは匿名にできるようにしています。</p>
+  <button class="btn m16" data-a="feelsave">送る</button>
+  <button class="btn g" data-a="feelskip">書かずに終わる</button>
+</div>`;
+};
+
+V.feeldone = function(){ return `
+<div class="scr" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;text-align:center">
+  <div style="color:var(--accent)">${icon("mail",54,1.3)}</div>
+  <h1 class="m16">ありがとうございました</h1>
+  <p class="sub">あなたの感想は、<b>贈った人の「理由」と並べて記録されます。</b><br>
+  次に贈るとき、ふたりの気持ちのズレが見えるようになります。</p>
+  ${loopSVG(4, 190)}
+  <button class="btn m24" data-a="home">自分も使ってみる</button>
+</div>`;
+};
+
+/* ===== 双方の意見を並べて表示するパーツ ============================= */
+function bothSides(g){
+  const why  = g.why  || null;
+  const feel = g.feel || null;
+  if(!why && !feel) return "";
+  const gap = (why && feel && feel.pick && feel.pick.some(x =>
+    x === "気をつかわせたかも" || x === "自分では選ばないものだった" || x === "正直、使い道に迷った"));
+  return `<div class="vs">
+    ${why ? `<div class="side give"><span class="ttl">贈った人の理由</span>
+      ${esc((why.pick||[]).join("／"))}${why.text?`<br>「${esc(why.text)}」`:""}</div>` : ""}
+    ${(why&&feel) ? `<div class="gap">${gap ? "↕ ここにズレがあります" : "↕"}</div>` : ""}
+    ${feel ? `<div class="side take"><span class="ttl">もらった人の気持ち${feel.anon?"（匿名）":""}</span>
+      ${esc((feel.pick||[]).join("／"))}${feel.text?`<br>「${esc(feel.text)}」`:""}</div>` : ""}
+  </div>`;
+}
+
+/* ===== 商品についた「ふたりの声」（次に選ぶときの材料） ============= */
+function voicesOf(gid){
+  const rows = S.gifts.filter(g => g.gift.id === gid && (g.why || g.feel));
+  if(!rows.length) return "";
+  return `<div class="voices">
+    <p class="jlab">この商品を贈った人・もらった人の声</p>
+    ${rows.slice(0,4).map(g => `
+      ${g.why ? `<div class="v"><span class="who g">贈った人</span><br>
+        ${esc((g.why.pick||[]).join("／"))}${g.why.text?`「${esc(g.why.text)}」`:""}</div>` : ""}
+      ${g.feel ? `<div class="v"><span class="who t">もらった人${g.feel.anon?"（匿名）":""}</span><br>
+        ${esc((g.feel.pick||[]).join("／"))}${g.feel.text?`「${esc(g.feel.text)}」`:""}</div>` : ""}
+    `).join("")}
+  </div>`;
+}
+
+/* ===== ノートに双方を出す ========================================== */
+(function(){
+  const base = V.note;
+  V.note = function(){
+    let h = base();
+    S.gifts.forEach(g => {
+      const both = bothSides(g);
+      if(!both) return;
+      const mark = `注文番号 ${esc(g.no||"")}`;
+      if(g.no && h.indexOf(mark) >= 0){
+        /* そのカードの末尾に差し込む */
+        const i = h.indexOf(mark);
+        const j = h.indexOf("</div></div>", i);
+        if(j > 0) h = h.slice(0, j) + both + h.slice(j);
+      }
+    });
+    return h;
+  };
+  /* 商品詳細に「ふたりの声」を出す */
+  const baseG = V.gdetail;
+  V.gdetail = function(){
+    const h = baseG();
+    const v = voicesOf(S.shopGift);
+    if(!v) return h;
+    return h.replace('<button class="btn m16" data-a="giveThis">', v + '<button class="btn m16" data-a="giveThis">');
+  };
+})();
+
+/* ===== 操作を足す =================================================== */
+(function(){
+  const prev = act;
+  act = function(d){
+    switch(d.a){
+      /* 贈った理由 */
+      case "why": S.whyId = d.id; S.whyPick = []; S.whyText = ""; save(); go("why"); return;
+      case "whyp": {
+        const a = S.whyPick || [];
+        S.whyPick = a.includes(d.v) ? a.filter(x => x !== d.v) : a.concat([d.v]);
+        const t = document.getElementById("whyt"); if(t) S.whyText = t.value;
+        save(); go("why"); return;
+      }
+      case "whysave": {
+        const t = document.getElementById("whyt");
+        const g = S.gifts.find(x => x.id === S.whyId);
+        if(g) g.why = { pick:(S.whyPick||[]).slice(), text:(t?t.value.trim():""), at:today() };
+        S.whyId = null; S.whyPick = null; S.whyText = ""; save(); go("note"); return;
+      }
+
+      /* もらった感想 */
+      case "feelp": {
+        const a = S.feelPick || [];
+        S.feelPick = a.includes(d.v) ? a.filter(x => x !== d.v) : a.concat([d.v]);
+        save(); go("feel"); return;
+      }
+      case "anonck": {
+        const c = document.getElementById("anonck");
+        S.feelAnon = c ? c.checked : !(S.feelAnon !== false);
+        save(); return;
+      }
+      case "feelsave": {
+        const t = document.getElementById("feelt");
+        const g = S.gifts.find(x => x.reply && !x.feel) || S.gifts.find(x => !x.feel);
+        if(g) g.feel = { pick:(S.feelPick||[]).slice(), text:(t?t.value.trim():""),
+                         anon:(S.feelAnon !== false), at:today() };
+        S.feelPick = null; save(); go("feeldone"); return;
+      }
+      case "feelskip": S.feelPick = null; save(); go("feeldone"); return;
+
+      default: return prev(d);
+    }
+  };
+})();
+
+/* ===== 流れをつなぐ ================================================
+   注文のあと → 「贈った理由」へ
+   「もう使った？」のあと → 「もらって どうでしたか？」へ
+   =================================================================== */
+(function(){
+  const baseSent = V.sent;
+  V.sent = function(){ return V.feel(); };   /* 返事のあと、そのまま感想へ */
+
+  const baseOrd = V.ordered;
+  V.ordered = function(){
+    const h = baseOrd();
+    const o = S.gifts.find(x => x.id === (S.draft && S.draft.orderId));
+    if(!o) return h;
+    return h.replace('<button class="btn g" data-a="home">ホームへ</button>',
+      `<button class="btn s" data-a="why" data-id="${o.id}">どうして選んだのか、書いておく</button>
+       <button class="btn g" data-a="home">あとで書く</button>`);
+  };
+})();
 
 /* 追加スタイル（購入フロー用） */
 (function(){
