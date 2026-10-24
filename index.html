@@ -221,7 +221,7 @@ input:focus,textarea:focus{outline:0;border-color:var(--accent)}
         （PRESENTERS ROOM https://presentersroom.jp/ の構造）
      3. 価格は税込表示（大和様のサイトに合わせる）
    ================================================================== */
-const CFG = { name:"GiftHub", ver:"1.2", key:"gifthub_v12" };
+const CFG = { name:"GiftHub", ver:"1.4", key:"gifthub_v14" };
 
 /* ===== 線画アイコン ==================================================
    絵文字を使わず、同じ太さ・同じ角丸の線で統一します。
@@ -320,56 +320,115 @@ const SCENES = [
 /* ===== 贈る相手（大和様の分類） ==================================== */
 const RELS = ["親友","女友達","男友達","彼氏・彼女","同僚","上司","家族","両親"];
 
-/* ===== 商品 48点（すべて税込。大和様のカテゴリに合わせて分類） ===== */
+/* ===== 商品 104点（すべて税込。大和様のカテゴリに合わせて分類）=====
+   rate  : 評価の平均（★）  nrate : 評価した人数
+   ⚠️ いまは仮の数字です。本番では「その後」で集まる受け取り手の反応から出します。
+   =================================================================== */
 const GIFTS = [
-  { id:"i01", cat:"drink",   name:"ドリップコーヒー 6袋",         price:1620, keep:180 },
-  { id:"i02", cat:"sweets",  name:"焼菓子の詰め合わせ",           price:1080, keep:30 },
-  { id:"i03", cat:"beauty",  name:"アロマオイル（おやすみ）",     price:2200, keep:0 },
-  { id:"i04", cat:"beauty",  name:"入浴剤セット",                 price:880,  keep:0 },
-  { id:"i05", cat:"towel",   name:"ガーゼハンカチ",               price:770,  keep:0 },
-  { id:"i06", cat:"drink",   name:"お茶のミックスボックス",       price:1620, keep:365 },
-  { id:"i07", cat:"goods",   name:"一輪挿しとドライフラワー",     price:1490, keep:0 },
-  { id:"i08", cat:"sweets",  name:"ひとくちケーキ 12個入",        price:1080, keep:14 },
-  { id:"i09", cat:"beauty",  name:"ハンドクリーム",               price:2200, keep:0 },
-  { id:"i10", cat:"home",    name:"箸置き 5枚セット",             price:2200, keep:0 },
-  { id:"i11", cat:"gourmet", name:"稲庭うどん 詰め合わせ",        price:2160, keep:180 },
-  { id:"i12", cat:"beauty",  name:"お香（ホワイトセージ）",       price:1430, keep:0 },
-  { id:"i13", cat:"sweets",  name:"季節のフルーツゼリー 15種",    price:2160, keep:60 },
-  { id:"i14", cat:"home",    name:"ハンドソープ",                 price:1650, keep:0 },
-  { id:"i15", cat:"drink",   name:"ティーバッグのギフト",         price:1080, keep:365 },
-  { id:"i16", cat:"exp",     name:"カフェのペアチケット",         price:3000, keep:180 },
-  { id:"i17", cat:"goods",   name:"布張りのノート",               price:1200, keep:0 },
-  { id:"i18", cat:"sweets",  name:"ショコラアソート 9粒",         price:1100, keep:90 },
-  { id:"i19", cat:"sweets",  name:"バタークリームケーキ 15cm",    price:4104, keep:3, cold:true },
-  { id:"i20", cat:"sweets",  name:"ホテルのアップルパイ",         price:3240, keep:3, cold:true },
-  { id:"i21", cat:"sweets",  name:"プリン詰め合わせ 6個",         price:2700, keep:5, cold:true },
-  { id:"i22", cat:"drink",   name:"フレーバーティー 5種",         price:1500, keep:365 },
-  { id:"i23", cat:"gourmet", name:"はちみつ 3種セット",           price:2808, keep:720 },
-  { id:"i24", cat:"gourmet", name:"だしパック 詰め合わせ",        price:1944, keep:180 },
-  { id:"i25", cat:"gourmet", name:"オリーブオイル（小瓶）",       price:2430, keep:540 },
-  { id:"i26", cat:"gourmet", name:"レトルトスープ 8食",           price:2592, keep:365 },
-  { id:"i27", cat:"beauty",  name:"ヘアオイル",                   price:2970, keep:0 },
-  { id:"i28", cat:"beauty",  name:"リップバーム 2本",             price:1760, keep:0 },
-  { id:"i29", cat:"beauty",  name:"フェイスマスク 5枚",           price:1320, keep:0 },
-  { id:"i30", cat:"goods",   name:"シルク混の靴下 2足",           price:1650, keep:0 },
-  { id:"i31", cat:"goods",   name:"やわらかいストール",           price:3850, keep:0 },
-  { id:"i32", cat:"goods",   name:"たためるエコバッグ",           price:1980, keep:0 },
-  { id:"i33", cat:"home",    name:"小さな観葉植物",               price:2500, keep:0 },
-  { id:"i34", cat:"beauty",  name:"アロマキャンドル",             price:2310, keep:0 },
-  { id:"i35", cat:"home",    name:"木のフォトフレーム",           price:1760, keep:0 },
-  { id:"i36", cat:"home",    name:"取り皿 2枚セット",             price:2640, keep:0 },
-  { id:"i37", cat:"towel",   name:"今治のフェイスタオル 2枚",     price:3300, keep:0 },
-  { id:"i38", cat:"goods",   name:"軽量の折りたたみ傘",           price:3520, keep:0 },
-  { id:"i39", cat:"exp",     name:"映画の鑑賞チケット 2枚",       price:2000, keep:180 },
-  { id:"i40", cat:"exp",     name:"レストランの食事券",           price:5000, keep:180 },
-  { id:"i41", cat:"exp",     name:"音楽配信 3か月ギフト",         price:2900, keep:365 },
-  { id:"i42", cat:"exp",     name:"電子書籍のギフト券",           price:1500, keep:365 },
-  { id:"i43", cat:"catalog", name:"カタログギフト 3,800円コース", price:3800, keep:0 },
-  { id:"i44", cat:"catalog", name:"カタログギフト 5,800円コース", price:5800, keep:0 },
-  { id:"i45", cat:"baby",    name:"ベビーソープ＆タオル",         price:3300, keep:0 },
-  { id:"i46", cat:"baby",    name:"おくるみブランケット",         price:4400, keep:0 },
-  { id:"i47", cat:"towel",   name:"ウォッシュタオル 3枚",         price:1980, keep:0 },
-  { id:"i48", cat:"gourmet", name:"お茶漬け・ふりかけ 8食",       price:1620, keep:300 }
+  { id:"i001", cat:"sweets", name:"焼菓子の詰め合わせ 12個", price:1080, keep:30, rate:4.5, nrate:128 },
+  { id:"i002", cat:"sweets", name:"ひとくちケーキ 12個入", price:1080, keep:14, rate:4.3, nrate:86 },
+  { id:"i003", cat:"sweets", name:"季節のフルーツゼリー 15種", price:2160, keep:60, rate:4.6, nrate:214 },
+  { id:"i004", cat:"sweets", name:"ショコラアソート 9粒", price:1100, keep:90, rate:4.4, nrate:167 },
+  { id:"i005", cat:"sweets", name:"バタークリームケーキ 15cm", price:4104, keep:3, cold:true, rate:4.8, nrate:342 },
+  { id:"i006", cat:"sweets", name:"ホテルのアップルパイ", price:3240, keep:3, cold:true, rate:4.7, nrate:198 },
+  { id:"i007", cat:"sweets", name:"プリン詰め合わせ 6個", price:2700, keep:5, cold:true, rate:4.5, nrate:153 },
+  { id:"i008", cat:"sweets", name:"クッキー缶（花柄）", price:2592, keep:45, rate:4.6, nrate:276 },
+  { id:"i009", cat:"sweets", name:"和三盆の干菓子", price:1296, keep:90, rate:4.2, nrate:64 },
+  { id:"i010", cat:"sweets", name:"どら焼き 6個入", price:1620, keep:7, rate:4.3, nrate:91 },
+  { id:"i011", cat:"sweets", name:"バウムクーヘン ホール", price:2376, keep:20, rate:4.5, nrate:187 },
+  { id:"i012", cat:"sweets", name:"マカロン 8個入", price:2808, keep:5, cold:true, rate:4.4, nrate:122 },
+  { id:"i013", cat:"sweets", name:"羊羹 3本セット", price:2160, keep:180, rate:4.1, nrate:58 },
+  { id:"i014", cat:"sweets", name:"ガトーショコラ", price:2484, keep:7, cold:true, rate:4.6, nrate:145 },
+  { id:"i015", cat:"sweets", name:"最中 10個入", price:1728, keep:30, rate:4.0, nrate:43 },
+  { id:"i016", cat:"gourmet", name:"稲庭うどん 詰め合わせ", price:2160, keep:180, rate:4.4, nrate:97 },
+  { id:"i017", cat:"gourmet", name:"はちみつ 3種セット", price:2808, keep:720, rate:4.6, nrate:163 },
+  { id:"i018", cat:"gourmet", name:"だしパック 詰め合わせ", price:1944, keep:180, rate:4.5, nrate:142 },
+  { id:"i019", cat:"gourmet", name:"オリーブオイル（小瓶）", price:2430, keep:540, rate:4.3, nrate:88 },
+  { id:"i020", cat:"gourmet", name:"レトルトスープ 8食", price:2592, keep:365, rate:4.4, nrate:176 },
+  { id:"i021", cat:"gourmet", name:"お茶漬け・ふりかけ 8食", price:1620, keep:300, rate:4.2, nrate:71 },
+  { id:"i022", cat:"gourmet", name:"高級ツナ缶 6個", price:3240, keep:1095, rate:4.5, nrate:119 },
+  { id:"i023", cat:"gourmet", name:"カレーの詰め合わせ 6食", price:2700, keep:365, rate:4.3, nrate:104 },
+  { id:"i024", cat:"gourmet", name:"スパイスセット 5種", price:2160, keep:540, rate:4.2, nrate:67 },
+  { id:"i025", cat:"gourmet", name:"梅干し（はちみつ漬け）", price:1080, keep:180, rate:4.1, nrate:52 },
+  { id:"i026", cat:"gourmet", name:"米 2kg（食べ比べ）", price:3024, keep:180, rate:4.4, nrate:93 },
+  { id:"i027", cat:"gourmet", name:"だししょうゆ・ぽん酢", price:1944, keep:365, rate:4.3, nrate:78 },
+  { id:"i028", cat:"gourmet", name:"乾燥パスタ＆ソース", price:2376, keep:365, rate:4.2, nrate:61 },
+  { id:"i029", cat:"drink", name:"ドリップコーヒー 6袋", price:1620, keep:180, rate:4.7, nrate:312 },
+  { id:"i030", cat:"drink", name:"お茶のミックスボックス", price:1620, keep:365, rate:4.5, nrate:186 },
+  { id:"i031", cat:"drink", name:"ティーバッグのギフト", price:1080, keep:365, rate:4.4, nrate:224 },
+  { id:"i032", cat:"drink", name:"フレーバーティー 5種", price:1500, keep:365, rate:4.3, nrate:131 },
+  { id:"i033", cat:"drink", name:"コーヒー豆 200g×2", price:3240, keep:90, rate:4.6, nrate:158 },
+  { id:"i034", cat:"drink", name:"日本酒 300ml×3", price:3300, keep:365, rate:4.5, nrate:112 },
+  { id:"i035", cat:"drink", name:"クラフトビール 6本", price:3960, keep:120, cold:true, rate:4.6, nrate:204 },
+  { id:"i036", cat:"drink", name:"梅酒 500ml", price:2750, keep:730, rate:4.4, nrate:86 },
+  { id:"i037", cat:"drink", name:"ノンアルコールスパークリング", price:2200, keep:365, rate:4.1, nrate:47 },
+  { id:"i038", cat:"drink", name:"ジュース 6本（果汁100%）", price:3024, keep:180, rate:4.3, nrate:96 },
+  { id:"i039", cat:"drink", name:"ほうじ茶ラテの素", price:1512, keep:180, rate:4.2, nrate:58 },
+  { id:"i040", cat:"drink", name:"ハーブティー 6種", price:1980, keep:540, rate:4.4, nrate:103 },
+  { id:"i041", cat:"home", name:"箸置き 5枚セット", price:2200, keep:0, rate:4.3, nrate:74 },
+  { id:"i042", cat:"home", name:"ハンドソープ", price:1650, keep:0, rate:4.2, nrate:88 },
+  { id:"i043", cat:"home", name:"小さな観葉植物", price:2500, keep:0, rate:4.5, nrate:136 },
+  { id:"i044", cat:"home", name:"木のフォトフレーム", price:1760, keep:0, rate:4.1, nrate:52 },
+  { id:"i045", cat:"home", name:"取り皿 2枚セット", price:2640, keep:0, rate:4.4, nrate:118 },
+  { id:"i046", cat:"home", name:"マグカップ 2個", price:3080, keep:0, rate:4.2, nrate:164 },
+  { id:"i047", cat:"home", name:"ガラスのタンブラー 2個", price:2860, keep:0, rate:4.4, nrate:97 },
+  { id:"i048", cat:"home", name:"カトラリー 4点", price:3520, keep:0, rate:4.5, nrate:86 },
+  { id:"i049", cat:"home", name:"土鍋（一人用）", price:4400, keep:0, rate:4.6, nrate:73 },
+  { id:"i050", cat:"home", name:"ランチョンマット 2枚", price:2200, keep:0, rate:4.0, nrate:41 },
+  { id:"i051", cat:"home", name:"急須と湯のみ", price:4180, keep:0, rate:4.5, nrate:62 },
+  { id:"i052", cat:"home", name:"アロマディフューザー", price:4950, keep:0, rate:4.6, nrate:189 },
+  { id:"i053", cat:"towel", name:"ガーゼハンカチ", price:770, keep:0, rate:4.3, nrate:142 },
+  { id:"i054", cat:"towel", name:"今治のフェイスタオル 2枚", price:3300, keep:0, rate:4.7, nrate:286 },
+  { id:"i055", cat:"towel", name:"ウォッシュタオル 3枚", price:1980, keep:0, rate:4.5, nrate:174 },
+  { id:"i056", cat:"towel", name:"刺繍ハンカチ 2枚", price:2200, keep:0, rate:4.4, nrate:108 },
+  { id:"i057", cat:"towel", name:"バスタオル（今治）", price:4400, keep:0, rate:4.7, nrate:221 },
+  { id:"i058", cat:"towel", name:"ガーゼケット", price:5500, keep:0, rate:4.6, nrate:96 },
+  { id:"i059", cat:"towel", name:"てぬぐい 3枚", price:1650, keep:0, rate:4.1, nrate:57 },
+  { id:"i060", cat:"beauty", name:"アロマオイル（おやすみ）", price:2200, keep:0, rate:4.5, nrate:163 },
+  { id:"i061", cat:"beauty", name:"入浴剤セット", price:880, keep:0, rate:4.4, nrate:312 },
+  { id:"i062", cat:"beauty", name:"ハンドクリーム", price:2200, keep:0, rate:4.6, nrate:254 },
+  { id:"i063", cat:"beauty", name:"お香（ホワイトセージ）", price:1430, keep:0, rate:4.2, nrate:68 },
+  { id:"i064", cat:"beauty", name:"ヘアオイル", price:2970, keep:0, rate:4.6, nrate:197 },
+  { id:"i065", cat:"beauty", name:"リップバーム 2本", price:1760, keep:0, rate:4.4, nrate:143 },
+  { id:"i066", cat:"beauty", name:"フェイスマスク 5枚", price:1320, keep:0, rate:4.3, nrate:208 },
+  { id:"i067", cat:"beauty", name:"アロマキャンドル", price:2310, keep:0, rate:4.5, nrate:131 },
+  { id:"i068", cat:"beauty", name:"ボディクリーム", price:3300, keep:0, rate:4.5, nrate:112 },
+  { id:"i069", cat:"beauty", name:"バスソルト 5種", price:1980, keep:0, rate:4.4, nrate:167 },
+  { id:"i070", cat:"beauty", name:"ルームスプレー", price:2640, keep:0, rate:4.2, nrate:74 },
+  { id:"i071", cat:"beauty", name:"シャンプー＆トリートメント", price:4400, keep:0, rate:4.5, nrate:148 },
+  { id:"i072", cat:"beauty", name:"ネイルオイル 2本", price:2200, keep:0, rate:4.3, nrate:89 },
+  { id:"i073", cat:"goods", name:"一輪挿しとドライフラワー", price:1490, keep:0, rate:4.3, nrate:76 },
+  { id:"i074", cat:"goods", name:"布張りのノート", price:1200, keep:0, rate:4.1, nrate:63 },
+  { id:"i075", cat:"goods", name:"シルク混の靴下 2足", price:1650, keep:0, rate:4.4, nrate:124 },
+  { id:"i076", cat:"goods", name:"やわらかいストール", price:3850, keep:0, rate:4.5, nrate:98 },
+  { id:"i077", cat:"goods", name:"たためるエコバッグ", price:1980, keep:0, rate:4.2, nrate:186 },
+  { id:"i078", cat:"goods", name:"軽量の折りたたみ傘", price:3520, keep:0, rate:4.6, nrate:152 },
+  { id:"i079", cat:"goods", name:"万年筆（入門用）", price:4400, keep:0, rate:4.4, nrate:71 },
+  { id:"i080", cat:"goods", name:"レザーのキーケース", price:4950, keep:0, rate:4.5, nrate:84 },
+  { id:"i081", cat:"goods", name:"モバイルバッテリー", price:3300, keep:0, rate:4.3, nrate:167 },
+  { id:"i082", cat:"goods", name:"ブックカバー（革）", price:2860, keep:0, rate:4.4, nrate:59 },
+  { id:"i083", cat:"goods", name:"ポーチ（撥水）", price:2420, keep:0, rate:4.2, nrate:93 },
+  { id:"i084", cat:"goods", name:"ルームシューズ", price:3080, keep:0, rate:4.5, nrate:106 },
+  { id:"i085", cat:"exp", name:"カフェのペアチケット", price:3000, keep:180, rate:4.6, nrate:142 },
+  { id:"i086", cat:"exp", name:"映画の鑑賞チケット 2枚", price:2000, keep:180, rate:4.5, nrate:218 },
+  { id:"i087", cat:"exp", name:"レストランの食事券", price:5000, keep:180, rate:4.7, nrate:164 },
+  { id:"i088", cat:"exp", name:"音楽配信 3か月ギフト", price:2900, keep:365, rate:4.4, nrate:97 },
+  { id:"i089", cat:"exp", name:"電子書籍のギフト券", price:1500, keep:365, rate:4.3, nrate:131 },
+  { id:"i090", cat:"exp", name:"陶芸体験ペア", price:6600, keep:365, rate:4.6, nrate:58 },
+  { id:"i091", cat:"exp", name:"日帰り温泉ペア", price:4400, keep:365, rate:4.7, nrate:112 },
+  { id:"i092", cat:"exp", name:"フラワーアレンジ体験", price:5500, keep:365, rate:4.5, nrate:43 },
+  { id:"i093", cat:"exp", name:"動画配信 3か月ギフト", price:2970, keep:365, rate:4.3, nrate:86 },
+  { id:"i094", cat:"baby", name:"ベビーソープ＆タオル", price:3300, keep:0, rate:4.6, nrate:94 },
+  { id:"i095", cat:"baby", name:"おくるみブランケット", price:4400, keep:0, rate:4.7, nrate:128 },
+  { id:"i096", cat:"baby", name:"スタイ 3枚セット", price:2200, keep:0, rate:4.4, nrate:76 },
+  { id:"i097", cat:"baby", name:"木のおもちゃ", price:3850, keep:0, rate:4.5, nrate:63 },
+  { id:"i098", cat:"baby", name:"ベビー食器セット", price:4950, keep:0, rate:4.6, nrate:81 },
+  { id:"i099", cat:"baby", name:"靴下 3足（ベビー）", price:1650, keep:0, rate:4.3, nrate:54 },
+  { id:"i100", cat:"catalog", name:"カタログギフト 3,800円コース", price:3800, keep:0, rate:4.4, nrate:312 },
+  { id:"i101", cat:"catalog", name:"カタログギフト 5,800円コース", price:5800, keep:0, rate:4.5, nrate:268 },
+  { id:"i102", cat:"catalog", name:"カタログギフト 10,800円コース", price:10800, keep:0, rate:4.6, nrate:147 },
+  { id:"i103", cat:"catalog", name:"グルメカタログ 4,800円", price:4800, keep:0, rate:4.5, nrate:196 },
+  { id:"i104", cat:"catalog", name:"体験カタログ 6,800円", price:6800, keep:0, rate:4.6, nrate:124 },
 ];
 const GI = id => GIFTS.find(g => g.id === id);
 const gicon = g => icon(CAT(g.cat).ic, 26, 1.5);
@@ -410,13 +469,13 @@ function seed(name){
       id:"g1", no:"GH-20251022-0001", toId:"f1", sentAt:"2025-10-22",
       intent:{ emotion:"thanks" },
       message:"去年の文化祭、ほんとに助かった。ずっと言えてなかったけど、ありがとう。",
-      gift:{ id:"i01", cat:"drink", name:"ドリップコーヒー 6袋", price:1620 },
+      gift:{ id:"i029", cat:"drink", name:"ドリップコーヒー 6袋", price:1620 },
       wrap:{ id:"w1", name:"かんたん包装", price:110 }, pay:"card", total:1730,
       receive:{ method:"deli", slot:"18〜20時", at:"2025-10-23" },
       reply:{ used:"u", comment:"毎朝これ飲んでる。また行こうね", at:"2025-10-25" }
     }],
     asks:[{ id:"a1", toId:"f1", createdAt:"2025-10-20",
-      items:["i01","i03","i05","i08"], answers:{ i01:"y", i03:"y", i05:"n", i08:"m" }, done:true, seen:true }],
+      items:["i029","i059","i053","i002"], answers:{ i029:"y", i059:"y", i053:"n", i002:"m" }, done:true, seen:true }],
     draft:null, session:{ in:true }
   };
 }
@@ -467,7 +526,7 @@ function onThisDay(){
   return S.gifts.filter(g => g.sentAt.slice(5) === md && g.sentAt.slice(0,4) !== today().slice(0,4));
 }
 function yearsAgo(d){ return Number(today().slice(0,4)) - Number(d.slice(0,4)); }
-const BUDGETS = [ ["すべて",null], ["〜1,500円",[0,1500]], ["1,500〜3,000円",[1500,3000]], ["3,000円〜",[3000,99999]] ];
+const BUDGETS = [ ["すべて",null], ["〜1,500円",[0,1500]], ["1,500〜3,000円",[1500,3000]], ["3,000〜5,000円",[3000,5000]], ["5,000円〜",[5000,99999]] ];
 
 const LOOP = ["きもち","贈る","届く","返る","残る"];
 function loopSVG(active, size){
@@ -1851,29 +1910,37 @@ suggest = function(fid, n, budget){
 V.shop = function(){
   const cat = S.shopCat || null;
   const bi  = S.shopBud || 0;
+  const srt = S.shopSort || "rate";
   const b   = BUDGETS[bi][1];
   let list = GIFTS.slice();
   if(cat) list = list.filter(g => g.cat === cat);
   if(b)   list = list.filter(g => g.price >= b[0] && g.price <= b[1]);
-  list.sort((a,b2) => a.price - b2.price);
-  const cats = Array.from(new Set(GIFTS.map(g => g.cat)));
+  if(srt === "rate")      list.sort((a,c) => (c.rate||0) - (a.rate||0) || (c.nrate||0) - (a.nrate||0));
+  else if(srt === "asc")  list.sort((a,c) => a.price - c.price);
+  else if(srt === "desc") list.sort((a,c) => c.price - a.price);
+  else if(srt === "many") list.sort((a,c) => (c.nrate||0) - (a.nrate||0));
+  const SORTS = [["rate","評価が高い順"],["many","贈られている順"],["asc","安い順"],["desc","高い順"]];
   return `
 ${header("ギフトを探す")}
 <div class="scr" style="padding-top:18px">
-  <h1 style="font-size:21px">${cat ? esc(cat) : "すべてのギフト"}<span class="sub" style="display:inline;font-size:13px"> ${list.length}点</span></h1>
+  <h1 style="font-size:21px">${cat ? esc(CAT(cat).name) : "すべてのギフト"}<span class="sub" style="display:inline;font-size:13px"> ${list.length}点</span></h1>
+  <p class="jlab m16">並べ替え</p>
+  <div class="chips">${SORTS.map(x=>`
+    <button class="chip ${srt===x[0]?"on":""}" data-a="shopsort" data-v="${x[0]}">${x[1]}</button>`).join("")}</div>
   <p class="jlab m16">価格</p>
   <div class="chips">${BUDGETS.map((x,i)=>`
     <button class="chip ${bi===i?"on":""}" data-a="shopbud" data-v="${i}">${x[0]}</button>`).join("")}</div>
   <p class="jlab m16">カテゴリ</p>
   <div class="chips">
     <button class="chip ${!cat?"on":""}" data-a="shopcat" data-v="">すべて</button>
-    ${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-a="shopcat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}
+    ${CATS.map(c=>`<button class="chip ${cat===c.id?"on":""}" data-a="shopcat" data-v="${c.id}">${esc(c.name)}</button>`).join("")}
   </div>
   <div class="m16">${list.length ? list.map(g=>`
     <div class="item" data-a="gdetail" data-id="${g.id}">
       <div class="ic">${gicon(g)}</div>
       <div class="m"><div class="nm">${esc(g.name)}</div>
-        <div class="pr">${yen(g.price)}　<span style="opacity:.75">${esc(g.cat)}${g.keep?`／日持ち ${g.keep}日`:""}${g.cold?"／要冷蔵":""}</span></div></div>
+        <div class="pr">${yen(g.price)}　<span class="rt">★ ${(g.rate||0).toFixed(1)}</span>
+        <span style="opacity:.7">(${g.nrate||0})</span>${g.keep?`　日持ち${g.keep}日`:""}${g.cold?"／要冷蔵":""}</div></div>
       <div style="color:#DCCFC4;font-size:19px">›</div>
     </div>`).join("") : `<div class="note">条件に合う商品がありません</div>`}</div>
 </div>`;
@@ -1891,7 +1958,8 @@ ${header("商品の詳細")}
   <h1 class="m16" style="font-size:21px">${esc(g.name)}</h1>
   <p style="font-size:24px;font-weight:800;margin-top:4px">${yen(g.price)}</p>
   <div class="card m16">
-    <div class="rc"><span>カテゴリ</span><b>${esc(g.cat)}</b></div>
+    <div class="rc"><span>評価</span><b><span class="rt">★ ${(g.rate||0).toFixed(1)}</span> <span style="font-weight:500;color:var(--muted);font-size:12px">${g.nrate||0}件</span></b></div>
+    <div class="rc"><span>カテゴリ</span><b>${esc(CAT(g.cat).name)}</b></div>
     <div class="rc"><span>日持ち</span><b>${g.keep ? g.keep + "日" : "なし（食品以外）"}</b></div>
     <div class="rc"><span>保管</span><b>${g.cold ? "要冷蔵" : "常温"}</b></div>
     <div class="rc"><span>ラッピング</span><b>選べます</b></div>
@@ -1916,6 +1984,12 @@ draw = function(){
     el.addEventListener("click", (ev) => { ev.stopPropagation(); act(el.dataset); }));
   const f = document.querySelector("[data-focus]"); if(f) f.focus();
 };
+
+(function(){
+  const s = document.createElement("style");
+  s.textContent = ".rt{color:#C08A2E;font-weight:800}";
+  document.head.appendChild(s);
+})();
 
 /* 本音モードの表示／非表示を設定に従わせる */
 (function(){
@@ -1964,6 +2038,7 @@ function act(d){
 
     /* ===== ショップ ===== */
     case "shopbud": S.shopBud = Number(d.v); S.menu=false; save(); go("shop"); break;
+    case "shopsort": S.shopSort = d.v; save(); go("shop"); break;
     case "shopcat": S.shopCat = d.v || null;  S.menu=false; save(); go("shop"); break;
     case "gdetail": S.shopGift = d.id; save(); go("gdetail"); break;
     case "giveThis": S.giveGift = S.shopGift; save(); go("friends"); break;
